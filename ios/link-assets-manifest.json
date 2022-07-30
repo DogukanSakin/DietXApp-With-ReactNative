@@ -1,0 +1,17 @@
+{
+  "migIndex": 1,
+  "data": [
+    {
+      "path": "assets/fonts/signika-light.ttf",
+      "sha1": "3e52815406b49e5d2c432979fa415e6c32c7d3e7"
+    },
+    {
+      "path": "assets/fonts/signika-regular.ttf",
+      "sha1": "e4fe3ff787b5a3264308ce9f7d6b2f79d665348e"
+    },
+    {
+      "path": "assets/fonts/signika-semibold.ttf",
+      "sha1": "87c9de7403daca5b19f1c739008e8a4588b61e6f"
+    }
+  ]
+}
