@@ -1,18 +1,18 @@
 import React,{FC} from 'react';
-import { TextInput,View } from 'react-native';
+import { TextInput,TextInputProps,View } from 'react-native';
 import Colors from '../../Styles/Colors';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import styles from './InputBox.style'
-interface IProps{
-    placeholder:string;
+interface IProps extends TextInputProps{
+   
     iconName?:string;
-    isPassword?:boolean
+
 }
-const InputBox:FC<IProps>=({placeholder,iconName,isPassword})=>{
+const InputBox:FC<IProps>=({placeholder,iconName,...rest})=>{
     return(
         <View style={styles.container}>
             {iconName ? <Icon name={iconName} size={25} color={Colors.iconColor} style={styles.icon}></Icon> : null}
-            <TextInput placeholder={placeholder} placeholderTextColor={Colors.textColor} style={styles.input} secureTextEntry={isPassword}></TextInput>
+            <TextInput {...rest}  placeholder={placeholder} placeholderTextColor={Colors.textColor} style={styles.input}></TextInput>
         </View>
     )
 }
