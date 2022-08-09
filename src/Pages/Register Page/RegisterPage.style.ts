@@ -67,5 +67,19 @@ export default StyleSheet.create({
         color:Colors.textColor,  
         textAlign:'center',
         flex:1
+    },
+    backToPageInnerContainer:{
+        marginTop:10,
+        marginBottom:15,
+        flexDirection:'row',
+        alignItems:'center',
+        justifyContent:'center'
+    },
+    backToPageText:{
+        fontFamily:Fonts.defaultRegularFont,
+        color:Colors.textColor,
+        fontSize:15
+      
+
     }
 })

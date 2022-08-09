@@ -30,7 +30,6 @@ export default  async function getImage(){
     } else {
 
         const previewFileName= response.assets[0].uri;
-      
         return previewFileName;
        
       

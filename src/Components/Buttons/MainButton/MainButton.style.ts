@@ -24,6 +24,9 @@ export default{
         buttonContainer:{
             ...baseStyle.buttonContainer,
             backgroundColor:Colors.darkGreen,
+        },
+        activityIndicator:{
+            color:'black'
         }
     },
     secondary:{

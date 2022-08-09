@@ -4,9 +4,10 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import LoginPage from './Pages/Login Page';
 import RegisterPage from './Pages/Register Page';
+import HomePage from './Pages/Home Page';
+import SearchWithoutLoginPage from './Pages/Search Without Login Page';
 import FlashMessage from "react-native-flash-message";
 import auth from '@react-native-firebase/auth';
-import HomePage from './Pages/Home Page';
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
 const Router=()=>{
@@ -23,13 +24,14 @@ const Router=()=>{
             <Stack.Navigator screenOptions={{headerShown:false}}>
                 <Stack.Screen name="Login" component={LoginPage} />
                 <Stack.Screen name="Register" component={RegisterPage} />  
+                <Stack.Screen name="SearchWithoutLogin" component={SearchWithoutLoginPage}></Stack.Screen>
             </Stack.Navigator>
         )
     }
     return(
         <NavigationContainer>
         {userSession?
-        <Tab.Navigator>
+        <Tab.Navigator screenOptions={{headerShown:false}}>
             <Tab.Screen name="Home" component={HomePage} />
         </Tab.Navigator>
         :

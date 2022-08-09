@@ -9,6 +9,10 @@ import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import MainButton from '../../Components/Buttons/MainButton';
 import { Formik } from 'formik';
 import getImage from '../../Utils/imagePicker';
+import { showMessage } from 'react-native-flash-message';
+import firebaseAuthErrorParser from '../../Utils/firebaseAuthErrorParser';
+import auth from '@react-native-firebase/auth';
+import database from '@react-native-firebase/database';
 interface IFormValues{
     email:string;
     password:string;
@@ -18,20 +22,18 @@ interface IFormValues{
     height?:string;
     profilePhotoURL?:string;
 }
-const RegisterPage:FC<IFormValues>=()=>{
-   
-    
+const RegisterPage:FC<IFormValues>=({navigation}:any)=>{
     const [maleCheckBox, setMaleCheckBox] = useState<boolean>(false);
     const [femaleCheckBox, setFemaleCheckBox] = useState<boolean>(false);
     const [isKeyboardVisible, setKeyboardVisible] = useState<boolean>(false);
     const [optionalInputFocus,setOptionalInputFocus] = useState<boolean>(false);
     const [photoURL,setPhotoURL] = useState<any>(null);
+    const [loading,setLoading]= useState<boolean>(false);
     useEffect(() => {
         const keyboardDidShowListener = Keyboard.addListener(
           'keyboardDidShow',
           () => {
-            setKeyboardVisible(true); // or some other action
-            
+            setKeyboardVisible(true); // or some other action  
           }
         );
         const keyboardDidHideListener = Keyboard.addListener(
@@ -40,37 +42,69 @@ const RegisterPage:FC<IFormValues>=()=>{
             setKeyboardVisible(false); // or some other action
           }
         );
-    
         return () => {
           keyboardDidHideListener.remove();
           keyboardDidShowListener.remove();
         };
       }, []);
     const initialValues:IFormValues={
-        
         email:'',
         password:'',
         repassword:'',
         gender:'',
         weight:'',
         height:'',
-        profilePhotoURL:''
-
     }
     async function handleUploadProfilePhoto(){
-        let response= await getImage();
-        setPhotoURL(response);
-       
-        
+        let response:any= await getImage();
+        const responseURI=response.assets[0].uri;
+        const imageName=responseURI.substring(responseURI.lastIndexOf('/')+1);
+        setPhotoURL(imageName);   
     }
-    function handleRegister(formValues:any){
-        let gender;
-        if(maleCheckBox || femaleCheckBox ){
-            if(maleCheckBox) gender='Male';
-            else if(femaleCheckBox) gender='Female';
+    async function handleRegister(formValues:any){
+        if(formValues.email =="" || formValues.password=="" || formValues.repassword==""){
+            showMessage({
+                message: "E-mail or password/repassword can not be empty.",
+                type: "danger",
+                titleStyle:{fontFamily:Fonts.defaultRegularFont},
+              });
         }
-        initialValues.gender=gender;
-       
+        else{
+            if(formValues.password !== formValues.repassword){
+                showMessage({
+                    message: "The entered passwords do not match",
+                    type: "danger",
+                    titleStyle:{fontFamily:Fonts.defaultRegularFont},
+                  });
+            }
+            else{
+                try {
+                    setLoading(true);
+                    const newUser={
+                        userName:formValues.email.split('@')[0],
+                        email:formValues.email,
+                        gender:maleCheckBox ? 'Male' : femaleCheckBox ? 'Female' : null,
+                        weight: formValues.weight ? formValues.weight : null,
+                        height: formValues.height ? formValues.height : null,
+                        profilePhotoURL: photoURL ? photoURL : null
+                    }
+                    await auth().createUserWithEmailAndPassword(formValues.email,formValues.password);
+                    const currUserUID=auth().currentUser?.uid;
+                    await database().ref(`users/${currUserUID}/`).set(newUser);
+                    setLoading(false);
+                    
+                } catch (error:any) {
+                    setLoading(false);
+                    showMessage({
+                        message: firebaseAuthErrorParser(error.code),
+                        type: "danger",
+                        titleStyle:{fontFamily:Fonts.defaultRegularFont},
+                      });
+                }
+    
+            }
+        }
+         
     }
     return(
         <View style={styles.container}>
@@ -136,16 +170,16 @@ const RegisterPage:FC<IFormValues>=()=>{
                                 
                             </View>
                             <MainButton title='Upload Profile Photo' theme='secondary' onPress={handleUploadProfilePhoto}></MainButton>
-                            <MainButton title='Register' onPress={handleSubmit}></MainButton>
+                            <MainButton title='Register' onPress={handleSubmit} loading={loading}></MainButton>
                         </>
-                 } 
-                    
-                     
+                 }  
                     </>
                 }
-                   
                 </Formik>
-               
+                <View style={styles.backToPageInnerContainer}>
+                    <Icon name='chevron-left' size={30} color={Colors.iconColor}></Icon>
+                    <Text style={styles.backToPageText} onPress={()=>navigation.goBack()}> Back to login page</Text>
+                </View>
             </View>
         </View>
     )

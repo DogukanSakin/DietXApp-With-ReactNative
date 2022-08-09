@@ -4,5 +4,6 @@ const Colors={
     textColor:'#525252',
     greyColor:'#F4F4F4',
     iconColor:'#525151',
+    lightTextColor:'#767676'
 }
 export default Colors;
