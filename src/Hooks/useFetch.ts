@@ -7,9 +7,10 @@ export default async function (url:any){
                     'x-app-key': "0f322b397b3bd9fa4b8f462318e840c9",
                     'x-remote-user-id': "0"
                     }
-            })
-            return data;
-        
+            }).then((response) => {
+                return response.data.branded;
+              })
+              return data;
         } catch (err:any) {
            console.log(err);  
         }

@@ -4,6 +4,7 @@ import Config from 'react-native-config';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import SearchResultCard from '../../Components/Cards/Search Result Card';
 import InputBox from '../../Components/InputBox';
+import SearchResultDetailModal from '../../Components/Modals/Search Result Detail Modal';
 import useFetch from '../../Hooks/useFetch';
 import Colors from '../../Styles/Colors';
 import styles from './SearchWithoutLogin.style';
@@ -13,16 +14,32 @@ interface IPageProps{
 const SearchWithoutLoginPage:FC<IPageProps>=({navigation})=>{
     const [loading,setLoading]=useState<boolean>(false);
     const [data,setData]=useState<any>(null);
+    const [detailModalVisible,setDetailModalVisible]=useState<boolean>(false);
+    const [resultDetailForModal,setResultDetailForModal]=useState<any>(null);
     async function searchFoodOrDrinkNutrition(searchedName:string){
-        setData(null);
-        setLoading(true);
-        const data=await useFetch(`${Config.API_URL}?query=${searchedName}&common=true&detailed=true`);
-        setLoading(false); 
-        setData(data);  
-        console.log(data);
-        
+        searchedName=searchedName.trim();
+        if(searchedName==""){
+            setData(null);
+        }
+        else{
+            setData(null);
+            setLoading(true);
+            const data=await useFetch(`${Config.API_URL}?query=${searchedName}&common=true&detailed=true`);
+            setLoading(false); 
+            setData(data);     
+        }
+          
     }
-    const renderResult=({item}:any)=><SearchResultCard item={item}></SearchResultCard>;
+    function handleVisibleDetailModal(item?:any){
+        setDetailModalVisible(!detailModalVisible);
+        if(item){
+            setResultDetailForModal(item);  
+        }
+         
+        
+         
+    }
+    const renderResult=({item}:any)=><SearchResultCard item={item} viewDetail={(item)=>handleVisibleDetailModal(item)}></SearchResultCard>;
     return(
         <View style={styles.container}>
             <View style={styles.titleInnerContainer}>
@@ -30,13 +47,9 @@ const SearchWithoutLoginPage:FC<IPageProps>=({navigation})=>{
                 <Text style={styles.titleText}>Search foods and drinks!</Text>
             </View>
             <InputBox iconName='magnify' placeholder='Search...' onChangeText={(text)=>searchFoodOrDrinkNutrition(text)}></InputBox>
-
-            <FlatList renderItem={({item})=>{return(
-                <View>
-                    <Text>{item.food_name}</Text>
-                </View>
-                
-            )}} data={data} ></FlatList>
+            { resultDetailForModal && <SearchResultDetailModal isVisible={detailModalVisible} onClose={()=>handleVisibleDetailModal()} item={resultDetailForModal}></SearchResultDetailModal>}
+            
+            <FlatList renderItem={renderResult} data={data} ></FlatList>
             <View style={styles.loadingStateContainer}> 
              {loading ? <ActivityIndicator size={35} color={Colors.iconColor}></ActivityIndicator> : null}
              

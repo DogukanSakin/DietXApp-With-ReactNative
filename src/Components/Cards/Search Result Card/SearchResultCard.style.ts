@@ -6,11 +6,10 @@ export default StyleSheet.create({
     container:{
         borderRadius:10,
         backgroundColor:Colors.lightGreen,
+        marginTop:10,
+        marginBottom:10
     },
     imageContainer:{
-        backgroundColor:Colors.darkGreen,
-        height:100,
-        width:100,
         borderRadius:10
     },
     innerContainer:{
@@ -36,5 +35,9 @@ export default StyleSheet.create({
         color:Colors.lightTextColor,
         fontSize:14,
         fontFamily:Fonts.defaultLightFont
+    },
+    image:{
+        width:100,
+        height:100,
     }
 })
