@@ -5,6 +5,7 @@ const Colors={
     greyColor:'#F4F4F4',
     iconColor:'#525151',
     lightTextColor:'#767676',
-    menuGrey:'#c5c6c7'
+    menuGrey:'#c5c6c7',
+    lightGrey:'#e3e3e3'
 }
 export default Colors;
