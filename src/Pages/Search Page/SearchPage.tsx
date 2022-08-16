@@ -14,6 +14,7 @@ import database from '@react-native-firebase/database';
 import parseContentData from '../../Utils/parseContentData';
 import auth from '@react-native-firebase/auth';
 import { showMessage } from 'react-native-flash-message';
+import AddDailyConsumptionModal from '../../Components/Modals/Add Daily Consumption Modal';
 const Tab = createMaterialTopTabNavigator();
 const deviceSize = Dimensions.get('window');
 const currentUserUID=auth().currentUser?.uid;
@@ -50,7 +51,10 @@ const SearchFoodsAndDrinks=()=>{
     const [loading,setLoading]=useState<boolean>(false);
     const [data,setData]=useState<any>(null);
     const [detailModalVisible,setDetailModalVisible]=useState<boolean>(false);
-    const [resultDetailForModal,setResultDetailForModal]=useState<any>(null)
+    const [resultDetailForModal,setResultDetailForModal]=useState<any>(null);
+    const [addDailyConsumptionModalVisible,setAddDailyConsumptionModalVisible]=useState<boolean>(false);
+    const [selectedFood,setSelectedFood]=useState<any>();
+    
     async function searchFoodOrDrinkNutrition(searchedName:string){
         searchedName=searchedName.trim();
         if(searchedName==""){
@@ -71,15 +75,24 @@ const SearchFoodsAndDrinks=()=>{
             setResultDetailForModal(item);  
         }     
     }
-    async function addDailyConsumption(item:any){
+    function handleDailyConsumptionModalVisible(item?:any){
+        setAddDailyConsumptionModalVisible(!addDailyConsumptionModalVisible);
+        if(item){
+            setSelectedFood(item);
+        }
+    }
+    async function addDailyConsumption(item:any,quantity:any,totalCal:any){
+        console.log("q:"+quantity+" t:"+totalCal);
+        
         try {
             setLoading(true);
             const dailyConsumptionContent={
                 name:item.food_name,
-                cal:item.nf_calories,
+                cal:totalCal,
                 protein:item.full_nutrients[0].attr_id == '203' ? item.full_nutrients[0].value : 0,
                 fat: item.full_nutrients[1] == '204' ? item.full_nutrients[1].value : 0,
                 carbohydrate: item.full_nutrients[2] == '205' ? item.full_nutrients[2].value : 0,
+                quantity:quantity
             }
             await database().ref(`dailyConsumptions/${currentUserUID}/`).push(dailyConsumptionContent);
             setLoading(false);
@@ -88,6 +101,7 @@ const SearchFoodsAndDrinks=()=>{
                 type: "success",
                 titleStyle:{fontFamily:Fonts.defaultRegularFont},
             });
+            setAddDailyConsumptionModalVisible(false);
             
             
         } catch (error) {
@@ -100,13 +114,14 @@ const SearchFoodsAndDrinks=()=>{
         }
              
     }
-    const renderResult=({item}:any)=><SearchResultCard item={item} viewDetail={(item)=>handleVisibleDetailModal(item)} addButtonVisible={true} addDailyConsumption={addDailyConsumption} loading={loading}></SearchResultCard>;
+    const renderResult=({item}:any)=><SearchResultCard item={item} viewDetail={(item)=>handleVisibleDetailModal(item)} addButtonVisible={true} addDailyConsumption={(item)=>handleDailyConsumptionModalVisible(item)} loading={loading}></SearchResultCard>;
     return(
         
         <View style={styles.container}>
             <InputBox iconName='magnify' placeholder='Search foods or drinks...' onChangeText={(text)=>searchFoodOrDrinkNutrition(text)} ></InputBox>
             { resultDetailForModal && <SearchResultDetailModal isVisible={detailModalVisible} onClose={()=>handleVisibleDetailModal()} item={resultDetailForModal}></SearchResultDetailModal>}
             <FlatList renderItem={renderResult} data={data} ></FlatList>
+            <AddDailyConsumptionModal isVisible={addDailyConsumptionModalVisible} onClose={handleDailyConsumptionModalVisible} food={selectedFood} addDailyConsumption={addDailyConsumption}></AddDailyConsumptionModal>
             <View style={styles.loadingStateContainer}> 
              {loading ? <ActivityIndicator size={35} color={Colors.iconColor}></ActivityIndicator> : null}
             </View>

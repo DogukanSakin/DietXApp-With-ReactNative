@@ -7,8 +7,6 @@ interface ICardProps{
     user:any;
 }
 const SearchUserCard:FC<ICardProps>=({user})=>{
-    console.log(user);
-    
     return(
         <View style={styles.container}>
             <Icon name='account-question' size={30} color={Colors.iconColor}></Icon>

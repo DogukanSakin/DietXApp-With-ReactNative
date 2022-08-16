@@ -97,5 +97,17 @@ export default StyleSheet.create({
         alignItems:'center',
         top:10
         
+    },
+    warningText:{
+        fontFamily:Fonts.defaultSemiBoldFont,
+        color:'red',
+        width:deviceSize.width/1.5,
+        textAlign:'center'
+          
+    },
+    warningContainer:{
+        justifyContent:'center',
+        alignItems:'center',
+        marginTop:10
     }
 })

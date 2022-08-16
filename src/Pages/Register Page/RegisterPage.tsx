@@ -21,6 +21,7 @@ interface IFormValues{
     weight?:string;
     height?:string;
     profilePhotoURL?:string;
+    age?:string;
 }
 const RegisterPage:FC<IFormValues>=({navigation}:any)=>{
     const [maleCheckBox, setMaleCheckBox] = useState<boolean>(false);
@@ -54,6 +55,7 @@ const RegisterPage:FC<IFormValues>=({navigation}:any)=>{
         gender:'',
         weight:'',
         height:'',
+        age:'',
     }
     async function handleUploadProfilePhoto(){
         let response:any= await getImage();
@@ -86,6 +88,7 @@ const RegisterPage:FC<IFormValues>=({navigation}:any)=>{
                         gender:maleCheckBox ? 'Male' : femaleCheckBox ? 'Female' : null,
                         weight: formValues.weight ? formValues.weight : null,
                         height: formValues.height ? formValues.height : null,
+                        age: formValues.age? formValues.age:null,
                         profilePhotoURL: photoURL ? photoURL : null
                     }
                     await auth().createUserWithEmailAndPassword(formValues.email,formValues.password);
@@ -162,10 +165,11 @@ const RegisterPage:FC<IFormValues>=({navigation}:any)=>{
                                 <InputBox onFocus={()=>setOptionalInputFocus(true)} onChangeText={handleChange('weight')} value={values.weight} placeholder='Weight(KG)' iconName='weight-kilogram'></InputBox>
                                 <View style={{flex:1}}></View>
                                 <InputBox onFocus={()=>setOptionalInputFocus(true)} onChangeText={handleChange('height')} value={values.height} placeholder='Height(CM)' iconName='human-male-height-variant'></InputBox>
+                                <View style={{flex:1}}></View>
+                                <InputBox onFocus={()=>setOptionalInputFocus(true)} onChangeText={handleChange('age')} value={values.age} placeholder='Age' iconName='baby-carriage'></InputBox>
                             </View>
                             <View style={styles.innerOptionalContainer}>
                                 {photoURL ? <Icon name='check-decagram' size={30} color={Colors.darkGreen}></Icon>:<Icon name='plus-box-multiple' size={30} color={Colors.iconColor}></Icon>}
-                                
                                 {photoURL ? <Text style={styles.uploadPhotoText}>A profile photo uploaded.</Text>:<Text style={styles.uploadPhotoText}>No profile photo uploaded.</Text>}
                                 
                             </View>

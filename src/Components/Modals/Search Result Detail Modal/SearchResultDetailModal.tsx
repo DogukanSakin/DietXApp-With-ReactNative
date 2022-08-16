@@ -12,6 +12,7 @@ interface IModalProps{
 }
 const SearchResultDetailModal:FC<IModalProps>=({isVisible,onClose,item})=>{ 
     const renderDetail=({item}:any)=><ResultDetailInfoCard nutrient={item}></ResultDetailInfoCard>;
+    
     return(
         <Modal isVisible={isVisible} onSwipeComplete={onClose} onBackdropPress={onClose} style={styles.modalContainer}>
             <View style={styles.container}>
