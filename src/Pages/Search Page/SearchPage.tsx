@@ -82,19 +82,41 @@ const SearchFoodsAndDrinks=()=>{
         }
     }
     async function addDailyConsumption(item:any,quantity:any,totalCal:any){
-        console.log("q:"+quantity+" t:"+totalCal);
+        if(quantity==undefined){
+            quantity=1;
+        }
+      
         
         try {
             setLoading(true);
+            console.log(item.food_name);
             const dailyConsumptionContent={
                 name:item.food_name,
                 cal:totalCal,
-                protein:item.full_nutrients[0].attr_id == '203' ? item.full_nutrients[0].value : 0,
-                fat: item.full_nutrients[1] == '204' ? item.full_nutrients[1].value : 0,
-                carbohydrate: item.full_nutrients[2] == '205' ? item.full_nutrients[2].value : 0,
+                protein:item.full_nutrients[0].attr_id == '203' ? Math.floor(item.full_nutrients[0].value*quantity) : 0,
+                fat: item.full_nutrients[1] == '204' ? Math.floor(item.full_nutrients[1].value*quantity): 0,
+                carbohydrate: item.full_nutrients[2] == '205' ? Math.floor(item.full_nutrients[2].value*quantity) : 0,
                 quantity:quantity
             }
-            await database().ref(`dailyConsumptions/${currentUserUID}/`).push(dailyConsumptionContent);
+            await database().ref(`dailyConsumptions/${currentUserUID}/`).orderByChild('name').equalTo(item.food_name).once('value').then(snapshot => {
+                if (snapshot.exists()) {
+                    const existData=snapshot.val();
+                    const parsedData=parseContentData(existData);
+                    database().ref(`dailyConsumptions/${currentUserUID}/${parsedData[0].id}/`).update(
+                        {
+                            cal:parsedData[0].cal+dailyConsumptionContent.cal,
+                            carbohydrate:parsedData[0].carbohydrate+dailyConsumptionContent.carbohydrate,
+                            fat:parsedData[0].fat+dailyConsumptionContent.fat,
+                            protein:parsedData[0].protein+dailyConsumptionContent.protein,
+                            quantity:parsedData[0].quantity+dailyConsumptionContent.quantity
+                        }
+                    )
+                }
+                else{
+                    database().ref(`dailyConsumptions/${currentUserUID}/`).push(dailyConsumptionContent); 
+                        
+                }
+            })
             setLoading(false);
             showMessage({
                 message: 'The food or drink successfuly added to your daily consumptions.',

@@ -1,5 +1,5 @@
 import React,{useEffect,useState} from 'react';
-import { Text,View } from 'react-native';
+import { FlatList, Text,View } from 'react-native';
 import styles from './HomePage.style';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import Colors from '../../Styles/Colors';
@@ -19,14 +19,15 @@ const userTEST={
     weight:90
 }
 const totalUserDailyConsumptionsTEST={
-    totalCal:2123,
+    totalCal:250,
     totalProtein:15,
     totalFat:50,
     totalCarbohydrate:750,
 }
 const HomePage=()=>{
     const [currentUserData,setCurrentUserData]=useState<any>(userTEST);
-    const [currentUserDailyConsumptions,setCurrentUserDailyConsumptions] = useState<any>(totalUserDailyConsumptionsTEST);
+    const [currentUserDailyConsumptionsTotals,setCurrentUserDailyConsumptionsTotals] = useState<any>(totalUserDailyConsumptionsTEST);
+    const [currentUserDailyConsumptions,setCurrentUserDailyConsumptions]=useState<any>();
     const [bmi,setBMI] = useState<number>(0);
     const [dailyTotalCal,setDailyTotalCal]=useState<number>(0);
     useEffect(()=>{
@@ -36,6 +37,7 @@ const HomePage=()=>{
     async function fetchCurrentUserInfo() {
         await database().ref(`users/${currentUserUID}`).on('value', snapshot => {
             const fetchedData = snapshot.val();
+            
             if(fetchedData!=undefined || fetchedData!=null){
                 setCurrentUserData(fetchedData);
                 if(fetchedData['weight'] && fetchedData['height']){
@@ -53,7 +55,7 @@ const HomePage=()=>{
                     }
                     
                 }
-
+                
             }
             else{ 
                 const BMI = Math.floor(Math.floor(userTEST.weight) / ((Math.floor(userTEST.height) / 100) * (Math.floor(userTEST.height) / 100)));
@@ -61,6 +63,7 @@ const HomePage=()=>{
                 const BMR = Math.floor(66.5 + (13.75 * Math.floor(userTEST.weight)) + (5.003 * Math.floor(userTEST.height)) - (6.75 * Math.floor(userTEST.age)));
                 setDailyTotalCal(BMR);
                 setCurrentUserData(userTEST);
+               
             }
             
         })
@@ -85,22 +88,34 @@ const HomePage=()=>{
                     totalFat:fat,
                     totalCarbohydrate:carbohydrate,
                 }
-                setCurrentUserDailyConsumptions(totalUserDailyConsumptions);
+                
+                setCurrentUserDailyConsumptionsTotals(totalUserDailyConsumptions);
+                setCurrentUserDailyConsumptions(parsedData);
+                
+                
 
             }
+            
             else{
-                setCurrentUserDailyConsumptions(totalUserDailyConsumptionsTEST);
+                setCurrentUserDailyConsumptionsTotals(totalUserDailyConsumptionsTEST);
             }
             
             
             
         })
     }
+    async function deleteDailyConsumption(food:any) {
+        console.log(food.id);
+        await database().ref(`dailyConsumptions/${currentUserUID}/${food.id}`).remove();
+
+        
+    }
+    const renderDailyConsumptions=({item}:any)=><DailyFoodCard food={item} onDelete={()=>deleteDailyConsumption(item)}></DailyFoodCard>
     return(
         <View style={styles.container}>
             <View style={styles.profileInnerContainer}>
                 <Icon name='account-question' size={30} color={Colors.iconColor}></Icon>
-                <Text style={styles.welcomeText}>Welcome back userName!</Text>
+                <Text style={styles.welcomeText}>Welcome back {currentUserData.userName}!</Text>
                     <View style={styles.userBodyMeasureContainer}>
                     <Icon name='weight-kilogram' size={30} color={Colors.iconColor} ></Icon>
                     <Text style={styles.measureText}>{currentUserData.weight} KG</Text>
@@ -129,7 +144,7 @@ const HomePage=()=>{
                 <View style={styles.totalCaloriesContainer}>
                     <Text style={styles.totalCalTitle}>Total Daily Calories </Text>
                     <CircularProgress
-                        value={currentUserDailyConsumptions.totalCal!=undefined ? currentUserDailyConsumptions.totalCal : 0}
+                        value={currentUserDailyConsumptionsTotals.totalCal!=undefined ? currentUserDailyConsumptionsTotals.totalCal : 0}
                         radius={75}
                         duration={5000}
                         progressValueColor={Colors.textColor}
@@ -140,21 +155,22 @@ const HomePage=()=>{
                         titleStyle={{fontWeight: 'bold',fontFamily:Fonts.defaultRegularFont}}
                         activeStrokeColor={Colors.darkGreen}
                         inActiveStrokeColor={Colors.lightGreen}
+                        
                     />
                 </View>
                     <View style={styles.infoValuesContainer}>
                         <View style={styles.infoValuesInnerContainer}>
-                            {currentUserDailyConsumptions.totalCarbohydrate!=undefined && currentUserDailyConsumptions!=undefined ? <Text style={styles.infoValuesText}> Carbohydrate: {currentUserDailyConsumptions.totalCarbohydrate} </Text> : <Text style={styles.infoValuesText}> Carbohydrate: 0 </Text>}    
+                            {currentUserDailyConsumptionsTotals.totalCarbohydrate!=undefined && currentUserDailyConsumptionsTotals!=undefined ? <Text style={styles.infoValuesText}> Carbohydrate: {currentUserDailyConsumptionsTotals.totalCarbohydrate} </Text> : <Text style={styles.infoValuesText}> Carbohydrate: 0 </Text>}    
                         </View>
                         <View style={styles.infoValuesInnerContainer}>
-                            {currentUserDailyConsumptions.totalProtein!=undefined && currentUserDailyConsumptions!=undefined ? <Text style={styles.infoValuesText}> Protein: {currentUserDailyConsumptions.totalProtein} </Text> : <Text style={styles.infoValuesText}> Protein: 0 </Text>}
+                            {currentUserDailyConsumptionsTotals.totalProtein!=undefined && currentUserDailyConsumptionsTotals!=undefined ? <Text style={styles.infoValuesText}> Protein: {currentUserDailyConsumptionsTotals.totalProtein} </Text> : <Text style={styles.infoValuesText}> Protein: 0 </Text>}
                         </View>
                         <View style={styles.infoValuesInnerContainer}>
-                            {currentUserDailyConsumptions.totalFat!=undefined && currentUserDailyConsumptions!=undefined ? <Text style={styles.infoValuesText}> Fat: {currentUserDailyConsumptions.totalFat}</Text>: <Text style={styles.infoValuesText}> Fat: 0</Text>}
+                            {currentUserDailyConsumptionsTotals.totalFat!=undefined && currentUserDailyConsumptionsTotals!=undefined ? <Text style={styles.infoValuesText}> Fat: {currentUserDailyConsumptionsTotals.totalFat}</Text>: <Text style={styles.infoValuesText}> Fat: 0</Text>}
                         </View>
                     </View>   
                 </View>
-                <DailyFoodCard></DailyFoodCard>
+                <FlatList data={currentUserDailyConsumptions} renderItem={renderDailyConsumptions} numColumns={2}></FlatList>
             </View>
         </View>
     )

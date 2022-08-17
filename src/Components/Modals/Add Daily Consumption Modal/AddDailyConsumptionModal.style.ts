@@ -29,5 +29,10 @@ export default StyleSheet.create({
     totalCalText:{
         color:Colors.textColor,
         ...baseTextStyle.baseText
+    },
+    errorText:{
+        color:'red',
+        fontFamily:Fonts.defaultRegularFont,
+        textAlign:'center'
     }
 })
