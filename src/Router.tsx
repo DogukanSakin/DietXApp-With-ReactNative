@@ -1,6 +1,6 @@
-import React,{useEffect,useState} from 'react';
+import React,{useEffect,useLayoutEffect,useState} from 'react';
 import {View,Text} from 'react-native';
-import { NavigationContainer } from '@react-navigation/native';
+import { getFocusedRouteNameFromRoute, NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import LoginPage from './Pages/Login Page';
@@ -15,6 +15,7 @@ import auth from '@react-native-firebase/auth';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import Colors from './Styles/Colors';
 import Fonts from './Styles/Fonts';
+import MessagesPage from './Pages/MessagesPage';
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
 const Router=()=>{
@@ -32,6 +33,22 @@ const Router=()=>{
                 <Stack.Screen name="SearchWithoutLogin" component={SearchWithoutLoginPage}></Stack.Screen>
             </Stack.Navigator>
         )
+    }
+    const LoginnedUserForumStack=({ navigation, route }:any)=>{
+      useLayoutEffect(() => {
+      const routeName = getFocusedRouteNameFromRoute(route);
+      if (routeName === "Messages"){
+            navigation.setOptions({tabBarStyle: {display: 'none'}});
+        }else {
+            navigation.setOptions({tabBarStyle: {display: 'flex'}});
+        }
+    }, [navigation, route]);
+      return(
+        <Stack.Navigator screenOptions={{headerShown:false}}>
+                <Stack.Screen name="Forum" component={ForumPage} />
+                <Stack.Screen name="Messages" component={MessagesPage} />  
+            </Stack.Navigator>
+      )
     }
     return(
         <NavigationContainer>
@@ -61,7 +78,7 @@ const Router=()=>{
                           );
                         },
                   }}/>
-            <Tab.Screen name="Forum" component={ForumPage} options={{
+            <Tab.Screen name="ForumStack" component={LoginnedUserForumStack} options={{
                         tabBarLabel: ({ focused }) => {
                             return <Text style={{color: focused ? Colors.darkGreen : Colors.menuGrey, fontFamily:Fonts.defaultRegularFont}}>Forum</Text>
                           },

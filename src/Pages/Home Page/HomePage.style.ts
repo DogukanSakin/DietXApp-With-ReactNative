@@ -109,5 +109,12 @@ export default StyleSheet.create({
         justifyContent:'center',
         alignItems:'center',
         marginTop:10
+    },
+    loadingContainer:{
+        backgroundColor:'white',
+        flex:1,
+        justifyContent:'center',
+        alignItems:'center'
+
     }
 })

@@ -42,7 +42,7 @@ const AddDailyConsumptionModal:FC<IModalProps>=({isVisible,onClose,food,addDaily
         }
         if(food){
             const totalCal=Math.floor(food.nf_calories)*Math.floor(enteredQuantity);
-            console.log(food.nf_calories);
+          
             setTotalCal(totalCal);
             setQuantity(enteredQuantity);   
             

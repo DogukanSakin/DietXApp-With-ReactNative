@@ -7,6 +7,8 @@ export default StyleSheet.create({
         width:150,
         backgroundColor:Colors.lightGreen,
         borderRadius:10,
+        flex:1,
+        margin:10
     
     },
     roomNameText:{
@@ -24,7 +26,7 @@ export default StyleSheet.create({
     roomInfoText:{
         color:Colors.textColor,
         fontFamily:Fonts.defaultRegularFont,
-        fontSize:13,
+        fontSize:17,
         marginLeft:5
     },
     titleContainer:{

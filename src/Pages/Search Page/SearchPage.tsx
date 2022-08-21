@@ -89,7 +89,6 @@ const SearchFoodsAndDrinks=()=>{
         
         try {
             setLoading(true);
-            console.log(item.food_name);
             const dailyConsumptionContent={
                 name:item.food_name,
                 cal:totalCal,

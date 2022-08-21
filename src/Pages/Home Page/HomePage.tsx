@@ -1,5 +1,5 @@
 import React,{useEffect,useState} from 'react';
-import { FlatList, Text,View } from 'react-native';
+import { ActivityIndicator, FlatList, Text,View } from 'react-native';
 import styles from './HomePage.style';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import Colors from '../../Styles/Colors';
@@ -30,10 +30,17 @@ const HomePage=()=>{
     const [currentUserDailyConsumptions,setCurrentUserDailyConsumptions]=useState<any>();
     const [bmi,setBMI] = useState<number>(0);
     const [dailyTotalCal,setDailyTotalCal]=useState<number>(0);
+    const [loading,setLoading]=useState<boolean>();
     useEffect(()=>{
-        fetchCurrentUserInfo();
-        fetchCurrentUserDailyConsumptions();
+        fetchAllData();
+       
     },[]);
+    async function fetchAllData() {
+        setLoading(true);
+        await fetchCurrentUserInfo();
+        await fetchCurrentUserDailyConsumptions(); 
+        setLoading(false);
+    }
     async function fetchCurrentUserInfo() {
         await database().ref(`users/${currentUserUID}`).on('value', snapshot => {
             const fetchedData = snapshot.val();
@@ -70,6 +77,7 @@ const HomePage=()=>{
         
     }
     async function fetchCurrentUserDailyConsumptions() {
+      
         await database().ref(`dailyConsumptions/${currentUserUID}`).on('value', snapshot => {
             const fetchedData = snapshot.val();
             if(fetchedData!=undefined || fetchedData!=null){
@@ -103,15 +111,23 @@ const HomePage=()=>{
             
             
         })
+        
+        
+      
+      
     }
     async function deleteDailyConsumption(food:any) {
-        console.log(food.id);
         await database().ref(`dailyConsumptions/${currentUserUID}/${food.id}`).remove();
 
         
     }
     const renderDailyConsumptions=({item}:any)=><DailyFoodCard food={item} onDelete={()=>deleteDailyConsumption(item)}></DailyFoodCard>
     return(
+        loading ? 
+        <View style={styles.loadingContainer}>
+            <ActivityIndicator size={30} color={Colors.darkGreen}></ActivityIndicator>
+        </View>
+        :
         <View style={styles.container}>
             <View style={styles.profileInnerContainer}>
                 <Icon name='account-question' size={30} color={Colors.iconColor}></Icon>
@@ -175,4 +191,5 @@ const HomePage=()=>{
         </View>
     )
 }
+
 export default HomePage;
