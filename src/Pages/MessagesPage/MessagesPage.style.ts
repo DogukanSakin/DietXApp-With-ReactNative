@@ -1,4 +1,2 @@
-import { StyleSheet } from 'react-native';
-export default StyleSheet.create({
-    
-})
+import {StyleSheet} from 'react-native';
+export default StyleSheet.create({});
