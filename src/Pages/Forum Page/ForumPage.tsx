@@ -16,6 +16,7 @@ import parseContentData from '../../Utils/parseContentData';
 import CheckRoomPasswordModal from '../../Components/Modals/CheckRoomPasswordModal';
 const Tab = createMaterialTopTabNavigator();
 const deviceSize = Dimensions.get('window');
+const currentUserUNAME = auth().currentUser?.email?.split('@')[0];
 const currentUserUID = auth().currentUser?.uid;
 
 function ForumPage() {
@@ -224,7 +225,7 @@ const AllRooms = ({navigation}: any) => {
         password: roomPassword ? roomPassword : null,
         admin: currentUserUID,
         isPrivate: roomPassword ? true : false,
-        users: [currentUserUID],
+        users: [{id: currentUserUID, userName: currentUserUNAME}],
       };
       await database().ref('rooms/').push(roomInfo);
       await database().ref(`users/${currentUserUID}/rooms/`).push(roomInfo);
@@ -313,7 +314,7 @@ async function goMessagesPage(
         .on('value', function (snapshot) {
           let isUserRegisteredTheRoom = false;
           snapshot.forEach(function (data): any {
-            if (data.val() === currentUserUID) {
+            if (data.val().id === currentUserUID) {
               navigation.navigate('Messages', {room});
               isUserRegisteredTheRoom = true;
             }
