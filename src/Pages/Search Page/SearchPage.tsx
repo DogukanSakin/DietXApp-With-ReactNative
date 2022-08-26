@@ -21,17 +21,16 @@ import SearchResultDetailModal from '../../Components/Modals/Search Result Detai
 import SearchUserCard from '../../Components/Cards/User Search Card';
 import database from '@react-native-firebase/database';
 import parseContentData from '../../Utils/parseContentData';
-import auth from '@react-native-firebase/auth';
 import {showMessage} from 'react-native-flash-message';
 import AddDailyConsumptionModal from '../../Components/Modals/Add Daily Consumption Modal';
+import currentUserInfo from '../../Utils/getUserInfo';
 const Tab = createMaterialTopTabNavigator();
 const deviceSize = Dimensions.get('window');
-const currentUserUID = auth().currentUser?.uid;
 function SearchPage() {
   return (
     <Tab.Navigator
       screenOptions={{
-        tabBarStyle: {shadowColor: 'transparent', paddingTop: 15},
+        tabBarStyle: {shadowColor: 'transparent', paddingTop: 15, elevation: 0},
         tabBarIndicatorStyle: {opacity: 0},
         tabBarPressColor: 'transparent',
       }}>
@@ -152,7 +151,7 @@ const SearchFoodsAndDrinks = () => {
         quantity: quantity,
       };
       await database()
-        .ref(`dailyConsumptions/${currentUserUID}/`)
+        .ref(`dailyConsumptions/${currentUserInfo.userID}/`)
         .orderByChild('name')
         .equalTo(item.food_name)
         .once('value')
@@ -161,7 +160,9 @@ const SearchFoodsAndDrinks = () => {
             const existData = snapshot.val();
             const parsedData = parseContentData(existData);
             database()
-              .ref(`dailyConsumptions/${currentUserUID}/${parsedData[0].id}/`)
+              .ref(
+                `dailyConsumptions/${currentUserInfo.userID}/${parsedData[0].id}/`,
+              )
               .update({
                 cal: parsedData[0].cal + dailyConsumptionContent.cal,
                 carbohydrate:
@@ -175,7 +176,7 @@ const SearchFoodsAndDrinks = () => {
               });
           } else {
             database()
-              .ref(`dailyConsumptions/${currentUserUID}/`)
+              .ref(`dailyConsumptions/${currentUserInfo.userID}/`)
               .push(dailyConsumptionContent);
           }
         });

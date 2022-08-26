@@ -1,23 +1,178 @@
-import React from 'react';
-import {Text, View, FlatList} from 'react-native';
+import React, {useState, useEffect} from 'react';
+import {Text, View, FlatList, Alert} from 'react-native';
 import MessageCard from '../../Components/Cards/Message Card';
 import styles from './MessagesPage.style';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import Colors from '../../Styles/Colors';
 import InputBox from '../../Components/InputBox';
-import auth from '@react-native-firebase/auth';
-function MessagesPage({route}: any) {
+import currentUserInfo from '../../Utils/getUserInfo';
+import database from '@react-native-firebase/database';
+import parseContentData from '../../Utils/parseContentData';
+import MessageContentInfoModal from '../../Components/Modals/Message Content Info Modal';
+import Fonts from '../../Styles/Fonts';
+import {showMessage} from 'react-native-flash-message';
+import RoomSettingsModal from '../../Components/Modals/Room Setting Modal';
+function MessagesPage({route, navigation}: any) {
   const {room} = route.params;
-  const currentUserUID = auth().currentUser?.uid;
+  const [messageInput, setMessageInput] = useState<string>();
+  const [roomMessageData, setRoomMessageData] = useState<any>();
+  const [messageContentInfoModalVisible, setMessageContentModalInfoVisible] =
+    useState<boolean>(false);
+  const [contentModalMessage, setContentModalMessage] = useState<any>();
+  const [isTextInputEnabled, setIsTextInputEnabled] = useState<boolean>(true);
+  const [roomSettingsModalVisible, setRoomSettingsModalVisible] =
+    useState<boolean>(false);
+  useEffect(() => {
+    getRoomMessageData();
+    checkCurrentUserIsBanned();
+  }, []);
+  function handleMessageContentInfoModalVisible(item?: any) {
+    if (room.admin === currentUserInfo.userID) {
+      if (item) {
+        setContentModalMessage(item);
+      }
+      setMessageContentModalInfoVisible(!messageContentInfoModalVisible);
+    }
+  }
+  function handleModalVisible(visibleValue: boolean, setMethod: any) {
+    setMethod(!visibleValue);
+  }
+  async function checkCurrentUserIsBanned() {
+    //If the user is banned during the chat, they are now blocked from sending messages.
+    await database()
+      .ref(`rooms/${room.id}/bannedUsers/`)
+      .on('value', function (snapshot) {
+        snapshot.forEach(function (data): any {
+          if (data.val().id === currentUserInfo.userID) {
+            setIsTextInputEnabled(false);
+          }
+        });
+      });
+  }
+  async function getRoomMessageData() {
+    await database()
+      .ref(`rooms/${room.id}/messages/`)
+      .on('value', snapshot => {
+        const fetchedData = snapshot.val();
+        if (fetchedData != null) {
+          const parsedData = parseContentData(fetchedData, true);
+          setRoomMessageData(parsedData);
+        }
+      });
+  }
+  function leaveRoomDialogBox() {
+    return Alert.alert(
+      'Are your sure?',
+      'Are you sure you want to leave the room? If there is a user other than you, the administration is transferred to one of these users. If not, your room will be deleted.',
+      [
+        {
+          text: 'Yes',
+          onPress: async () => {
+            await database()
+              .ref(`rooms/${room.id}/users/`)
+              .once('value')
+              .then(async snapshot => {
+                const fetchedData = snapshot.val();
+                const dataLength = fetchedData.length;
+                if (dataLength == 1) {
+                  //If the room has only one member and the admin leaves the room voluntarily, the room is deleted
+                  await database().ref(`rooms/${room.id}`).remove();
+                  navigation.navigate('Forum');
+                } else {
+                  //If a user other than the administrator is present in the room, the adminship is transferred to the first of these users.
+                  database()
+                    .ref(`rooms/${room.id}/`)
+                    .update({admin: fetchedData[1].id});
+                  updateUsersInRoomData(room, currentUserInfo.userID);
+                  navigation.navigate('Forum');
+                }
+              });
+          },
+        },
+
+        {
+          text: 'No',
+        },
+      ],
+    );
+  }
+  async function handleSendMessage() {
+    const messageInfo = {
+      authorID: currentUserInfo.userID,
+      authorName: currentUserInfo.userName,
+      message: messageInput,
+      sendTime: new Date().toISOString(),
+    };
+    await database().ref(`rooms/${room.id}/messages/`).push(messageInfo);
+    setMessageInput('');
+  }
+  async function handleBanUser(userID: any, userName: any) {
+    await database()
+      .ref(`rooms/${room.id}/bannedUsers/`)
+      .on('value', function (snapshot) {
+        snapshot.forEach(function (data): any {
+          if (data.val().id === userID) {
+            showMessage({
+              message: 'You have banned this user before!',
+              type: 'danger',
+              titleStyle: {fontFamily: Fonts.defaultRegularFont},
+            });
+          } else {
+            database()
+              .ref(`rooms/${room.id}/`)
+              .update({
+                bannedUsers: [
+                  ...room.bannedUsers,
+                  {id: userID, userName: userName},
+                ],
+              });
+            showMessage({
+              message: 'The user has been banned.',
+              type: 'success',
+              titleStyle: {fontFamily: Fonts.defaultRegularFont},
+            });
+            database()
+              .ref(`rooms/${room.id}/messages/`)
+              .on('value', function (snapshot) {
+                snapshot.forEach(function (data): any {
+                  if (data.val().authorID === userID) {
+                    database()
+                      .ref(`rooms/${room.id}/messages/${data.key}`)
+                      .remove();
+                  }
+                });
+              });
+            updateUsersInRoomData(room, userID);
+          }
+        });
+      });
+
+    setMessageContentModalInfoVisible(false);
+  }
+  const renderMessages = ({item}: any) => (
+    <MessageCard
+      message={item}
+      onOpenMessageContentInfo={() =>
+        handleMessageContentInfoModalVisible(item)
+      }
+      roomAdmin={room.admin}></MessageCard>
+  );
   return (
     <View style={styles.container}>
       <View style={styles.innerContainer}>
-        {room.admin === currentUserUID ? (
+        {/*If current user room's admin, this icon visible to them for room settings */}
+        {room.admin === currentUserInfo.userID ? (
           <Icon
             name="cog"
             size={30}
             color={Colors.darkGreen}
             style={styles.iconContainer}
+            onPress={() =>
+              handleModalVisible(
+                roomSettingsModalVisible,
+                setRoomSettingsModalVisible,
+              )
+            }
           />
         ) : (
           <Icon
@@ -30,27 +185,69 @@ function MessagesPage({route}: any) {
 
         <Text style={styles.roomNameText}>Room: {room.name}</Text>
         <Icon
-          name="logout"
+          name="chevron-right"
           size={30}
           color={Colors.darkGreen}
           style={styles.iconContainer}
+          onPress={() => navigation.navigate('Forum')}
         />
       </View>
 
       <View style={styles.line} />
-      <FlatList data={null} renderItem={null} />
+      <FlatList data={roomMessageData} renderItem={renderMessages} />
       <View style={styles.messageInputContainer}>
         <View style={styles.inputInnerContainer}>
-          <InputBox placeholder="Message..." multiline />
+          <InputBox
+            placeholder="Message..."
+            multiline
+            value={messageInput}
+            onChangeText={t => setMessageInput(t)}
+            editable={isTextInputEnabled}
+          />
         </View>
         <Icon
-          name="send"
-          size={30}
+          name="send-circle"
+          size={45}
           color={Colors.darkGreen}
-          style={styles.iconContainer}
+          onPress={handleSendMessage}
         />
       </View>
+      {contentModalMessage && (
+        <MessageContentInfoModal
+          isVisible={messageContentInfoModalVisible}
+          onClose={() => handleMessageContentInfoModalVisible()}
+          message={contentModalMessage}
+          onBanUser={handleBanUser}
+        />
+      )}
+      <RoomSettingsModal
+        isVisible={roomSettingsModalVisible}
+        onClose={() =>
+          handleModalVisible(
+            roomSettingsModalVisible,
+            setRoomSettingsModalVisible,
+          )
+        }
+        room={room}></RoomSettingsModal>
     </View>
   );
+}
+async function updateUsersInRoomData(room: any, userID: any) {
+  const result = await database()
+    .ref(`rooms/${room.id}/users/`)
+    .once('value')
+    .then(snapshot => {
+      if (snapshot.val()) {
+        const fetchedData = snapshot.val();
+        const filteredData = fetchedData.filter(
+          (user: any) => user.id !== userID,
+        );
+        return filteredData;
+      }
+    });
+  console.log([{...result}]);
+  await database()
+    .ref(`rooms/${room.id}/users/`)
+    .set({...result});
 }
 export default MessagesPage;

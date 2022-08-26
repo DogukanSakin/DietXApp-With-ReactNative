@@ -9,21 +9,18 @@ import InputBox from '../../Components/InputBox';
 import RoomCard from '../../Components/Cards/Room Card';
 import FloatingButton from '../../Components/Buttons/Floating Button';
 import CreateRoomModal from '../../Components/Modals/Create Room Modal';
-import auth from '@react-native-firebase/auth';
 import database from '@react-native-firebase/database';
 import {showMessage} from 'react-native-flash-message';
 import parseContentData from '../../Utils/parseContentData';
 import CheckRoomPasswordModal from '../../Components/Modals/CheckRoomPasswordModal';
+import currentUserInfo from '../../Utils/getUserInfo';
 const Tab = createMaterialTopTabNavigator();
 const deviceSize = Dimensions.get('window');
-const currentUserUNAME = auth().currentUser?.email?.split('@')[0];
-const currentUserUID = auth().currentUser?.uid;
-
 function ForumPage() {
   return (
     <Tab.Navigator
       screenOptions={{
-        tabBarStyle: {shadowColor: 'transparent', paddingTop: 15},
+        tabBarStyle: {shadowColor: 'transparent', paddingTop: 15, elevation: 0},
         tabBarIndicatorStyle: {opacity: 0},
         tabBarPressColor: 'transparent',
       }}>
@@ -94,45 +91,18 @@ const MyRooms = ({navigation}: any) => {
     fetchMyRoomsData();
   }, []);
   async function fetchMyRoomsData() {
-    const fetchedData: any = [];
-    if (currentUserUID) {
-      await database()
-        .ref('rooms')
-        .orderByChild('users')
-        .on('value', function (snapshot) {
-          snapshot.forEach(function (data): any {
-            if (data.val().users.includes(currentUserUID)) {
-              const roomContent = {
-                id: data.key,
-                ...data.val(),
-              };
-              fetchedData.push(roomContent);
-            }
-          });
-          setMyRoomsData(fetchedData);
+    const fetchedDataArray: any = [];
+    await database()
+      .ref('rooms')
+      .orderByChild('users')
+      .on('value', function (snapshot) {
+        snapshot.forEach(function (data): any {
+          if (data.val().users[0].id === currentUserInfo.userID) {
+            fetchedDataArray.push(data.val());
+          }
         });
-    }
-  }
-  function searchInMyRooms(roomName: string) {
-    roomName = roomName.trim();
-    if (roomName === '') {
-      setFilteredRoomData(null);
-    } else {
-      setFilteredRoomData(myRoomsData);
-      if (filteredRoomData) {
-        const result = filteredRoomData.filter((room: any) => {
-          roomName = roomName.toLowerCase();
-          const currentRoomName = room.name.toLowerCase();
-          return currentRoomName.indexOf(roomName) > -1;
-        });
-        if (result) {
-          setFilteredRoomData(result);
-        }
-      }
-    }
-  }
-  function handleCheckRoomPasswordModalVisible() {
-    setCheckRoomPasswordModalVisible(!checkRoomPasswordModalVisible);
+        setMyRoomsData(fetchedDataArray);
+      });
   }
   const renderRooms = ({item}: any) => (
     <RoomCard
@@ -152,9 +122,10 @@ const MyRooms = ({navigation}: any) => {
       <InputBox
         iconName="magnify"
         placeholder="Search in my rooms..."
-        onChangeText={t => searchInMyRooms(t)}
+        onChangeText={t =>
+          searchInRooms(t, setFilteredRoomData, filteredRoomData, myRoomsData)
+        }
       />
-      <Text>MYROOMS</Text>
       {filteredRoomData ? (
         <FlatList
           data={filteredRoomData}
@@ -166,7 +137,12 @@ const MyRooms = ({navigation}: any) => {
       )}
       <CheckRoomPasswordModal
         isVisible={checkRoomPasswordModalVisible}
-        onClose={handleCheckRoomPasswordModalVisible}
+        onClose={() =>
+          handleModalVisible(
+            setCheckRoomPasswordModalVisible,
+            checkRoomPasswordModalVisible,
+          )
+        }
         room={roomForCheckPassword}
       />
     </View>
@@ -184,24 +160,7 @@ const AllRooms = ({navigation}: any) => {
   useEffect(() => {
     fetchRoomData();
   }, []);
-  function searchInAllRooms(roomName: string) {
-    roomName = roomName.trim();
-    if (roomName === '') {
-      setFilteredRoomData(null);
-    } else {
-      setFilteredRoomData(roomsData);
-      if (filteredRoomData) {
-        const result = filteredRoomData.filter((room: any) => {
-          roomName = roomName.toLowerCase();
-          const currentRoomName = room.name.toLowerCase();
-          return currentRoomName.indexOf(roomName) > -1;
-        });
-        if (result) {
-          setFilteredRoomData(result);
-        }
-      }
-    }
-  }
+
   async function fetchRoomData() {
     await database()
       .ref('rooms/')
@@ -211,11 +170,11 @@ const AllRooms = ({navigation}: any) => {
           const parsedData = parseContentData(fetchedData);
 
           setRoomsData(parsedData);
+        } else {
+          setRoomsData([]);
+          setFilteredRoomData(null);
         }
       });
-  }
-  function handleCreateRoomVisible() {
-    setCreateRoomVisible(!createRoomModalVisible);
   }
   async function createARoom(roomName: string, roomPassword: string) {
     try {
@@ -223,12 +182,14 @@ const AllRooms = ({navigation}: any) => {
       const roomInfo = {
         name: roomName,
         password: roomPassword ? roomPassword : null,
-        admin: currentUserUID,
+        admin: currentUserInfo.userID,
         isPrivate: roomPassword ? true : false,
-        users: [{id: currentUserUID, userName: currentUserUNAME}],
+        users: [
+          {id: currentUserInfo.userID, userName: currentUserInfo.userName},
+        ],
+        bannedUsers: [{id: '', userName: ''}],
       };
       await database().ref('rooms/').push(roomInfo);
-      await database().ref(`users/${currentUserUID}/rooms/`).push(roomInfo);
       setLoading(false);
       showMessage({
         message: 'Your room was successfuly created!',
@@ -246,11 +207,6 @@ const AllRooms = ({navigation}: any) => {
       });
     }
   }
-
-  function handleCheckRoomPasswordModalVisible() {
-    setCheckRoomPasswordModalVisible(!checkRoomPasswordModalVisible);
-  }
-
   const renderRooms = ({item}: any) => (
     <RoomCard
       room={item}
@@ -269,7 +225,9 @@ const AllRooms = ({navigation}: any) => {
       <InputBox
         iconName="magnify"
         placeholder="Search in all rooms..."
-        onChangeText={t => searchInAllRooms(t)}
+        onChangeText={t =>
+          searchInRooms(t, setFilteredRoomData, filteredRoomData, roomsData)
+        }
       />
       {filteredRoomData ? (
         <FlatList
@@ -280,16 +238,27 @@ const AllRooms = ({navigation}: any) => {
       ) : (
         <FlatList data={roomsData} renderItem={renderRooms} numColumns={2} />
       )}
-      <FloatingButton onPress={handleCreateRoomVisible} />
+      <FloatingButton
+        onPress={() =>
+          handleModalVisible(setCreateRoomVisible, createRoomModalVisible)
+        }
+      />
       <CreateRoomModal
         isVisible={createRoomModalVisible}
-        onClose={handleCreateRoomVisible}
+        onClose={() =>
+          handleModalVisible(setCreateRoomVisible, createRoomModalVisible)
+        }
         onCreateRoom={createARoom}
         loading={loading}
       />
       <CheckRoomPasswordModal
         isVisible={checkRoomPasswordModalVisible}
-        onClose={handleCheckRoomPasswordModalVisible}
+        onClose={() =>
+          handleModalVisible(
+            setCheckRoomPasswordModalVisible,
+            checkRoomPasswordModalVisible,
+          )
+        }
         room={roomForCheckPassword}
       />
     </View>
@@ -297,38 +266,95 @@ const AllRooms = ({navigation}: any) => {
 };
 //---------------------------------------------------------------------------------------
 //common functions for two pages
+//This function is copies the data sent to it and performs a search according to the value sent in it.
+//This function is used both in the section where all rooms are and in the part where the rooms of which the user is a member are shown.
+function searchInRooms(
+  roomName: string,
+  filteredDataSet: any,
+  filteredData: any,
+  currentData: any,
+) {
+  roomName = roomName.trim();
+  if (roomName === '') {
+    filteredDataSet(null);
+  } else {
+    filteredDataSet(currentData);
+    if (filteredData) {
+      const result = filteredData.filter((room: any) => {
+        roomName = roomName.toLowerCase();
+        const currentRoomName = room.name.toLowerCase();
+        return currentRoomName.indexOf(roomName) > -1;
+      });
+      if (result) {
+        filteredDataSet(result);
+      }
+    }
+  }
+}
+//For modals:
+function handleModalVisible(setModalFunction: any, modalVisibleValue: boolean) {
+  setModalFunction(!modalVisibleValue);
+}
+
 async function goMessagesPage(
   room: any,
   roomPassword: any,
   modalVisible: any,
   navigation: any,
 ) {
-  if (room.isPrivate) {
-    roomPassword(room);
-    modalVisible(true);
-  } else {
-    if (currentUserUID) {
-      await database()
-        .ref(`rooms/${room.id}/users`)
-        .orderByChild('users')
-        .on('value', function (snapshot) {
-          let isUserRegisteredTheRoom = false;
-          snapshot.forEach(function (data): any {
-            if (data.val().id === currentUserUID) {
-              navigation.navigate('Messages', {room});
-              isUserRegisteredTheRoom = true;
-            }
+  await database()
+    .ref(`rooms/${room.id}/bannedUsers/`)
+    .once('value', async function (snapshot) {
+      const isUserBanned = await snapshot.forEach(function (data): any {
+        //We are checking if current user is banned
+        if (data.val().id === currentUserInfo.userID) {
+          showMessage({
+            message: 'You cannot enter this room because you are banned.',
+            type: 'info',
+            titleStyle: {fontFamily: Fonts.defaultRegularFont},
           });
-          if (isUserRegisteredTheRoom === false) {
+          return true;
+        }
+        return false;
+      });
+      if (isUserBanned === false) {
+        if (room.isPrivate && currentUserInfo.userID !== room.admin) {
+          roomPassword(room);
+          modalVisible(true);
+        } else {
+          if (currentUserInfo.userID) {
             database()
-              .ref(`rooms/${room.id}/`)
-              .update({
-                users: [...room.users, currentUserUID],
+              .ref(`rooms/${room.id}/users`)
+              .orderByChild('users')
+              .once('value', function (snapshot) {
+                let isUserRegisteredTheRoom = false;
+                snapshot.forEach(function (data): any {
+                  //If current user is included in the room members, directly go message page
+                  if (data.val().id === currentUserInfo.userID) {
+                    navigation.navigate('Messages', {room});
+                    isUserRegisteredTheRoom = true;
+                  }
+                });
+                if (isUserRegisteredTheRoom === false) {
+                  //If the user is not among the members of the room, it is first registered and then go message page.
+                  database()
+                    .ref(`rooms/${room.id}/`)
+                    .update({
+                      users: [
+                        ...room.users,
+                        {
+                          id: currentUserInfo.userID,
+                          userName: currentUserInfo.userName,
+                        },
+                      ],
+                    });
+                  navigation.navigate('Messages', {room});
+                }
               });
           }
-        });
-    }
-  }
+        }
+      }
+    });
 }
 
 export default ForumPage;

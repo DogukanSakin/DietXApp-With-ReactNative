@@ -9,34 +9,35 @@ export default StyleSheet.create({
   modalContainer: {
     ...ModalDefaults.modalContainer,
   },
-  title: {
-    color: Colors.textColor,
+  contentText: {
     fontFamily: Fonts.defaultRegularFont,
-    fontSize: 17,
-    textAlign: 'center',
+    fontSize: 20,
+    color: Colors.textColor,
   },
-  line: {
-    borderBottomWidth: 0.5,
-    flex: 1,
+  tagText: {
+    fontFamily: Fonts.defaultSemiBoldFont,
+    fontSize: 20,
     color: Colors.darkGreen,
   },
-  optionalTextContainer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
+  line: {
+    borderBottomWidth: 1,
+    borderColor: Colors.lightGreen,
+    flex: 1,
     marginTop: 10,
     marginBottom: 10,
   },
-  text: {
-    fontSize: 13,
+  banButtonText: {
+    color: 'red',
     fontFamily: Fonts.defaultRegularFont,
-    color: Colors.textColor,
-    flex: 1,
+    fontSize: 20,
     textAlign: 'center',
   },
-  warningText: {
-    color: 'red',
-    fontSize: 13,
-    fontFamily: Fonts.defaultRegularFont,
+  banButtonContainer: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    flexDirection: 'row',
+  },
+  buttonIcon: {
+    marginLeft: 5,
   },
 });

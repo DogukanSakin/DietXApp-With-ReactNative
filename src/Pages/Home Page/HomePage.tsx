@@ -8,10 +8,9 @@ import Colors from '../../Styles/Colors';
 import CircularProgress from 'react-native-circular-progress-indicator';
 import Fonts from '../../Styles/Fonts';
 import DailyFoodCard from '../../Components/Cards/Daily Food Card';
-import auth from '@react-native-firebase/auth';
 import database from '@react-native-firebase/database';
 import parseContentData from '../../Utils/parseContentData';
-const currentUserUID = auth().currentUser?.uid;
+import currentUserInfo from '../../Utils/getUserInfo';
 const userTEST = {
   age: 18,
   email: 'Nra@nra.com',
@@ -48,8 +47,9 @@ function HomePage() {
     setLoading(false);
   }
   async function fetchCurrentUserInfo() {
+    //Here, the daily calorie needs of the user are calculated using formulas.
     await database()
-      .ref(`users/${currentUserUID}`)
+      .ref(`users/${currentUserInfo.userID}`)
       .on('value', snapshot => {
         const fetchedData = snapshot.val();
 
@@ -107,8 +107,9 @@ function HomePage() {
       });
   }
   async function fetchCurrentUserDailyConsumptions() {
+    //The values of the nutrients consumed by the user daily are calculated here.
     await database()
-      .ref(`dailyConsumptions/${currentUserUID}`)
+      .ref(`dailyConsumptions/${currentUserInfo.userID}`)
       .on('value', snapshot => {
         const fetchedData = snapshot.val();
         if (fetchedData !== undefined || fetchedData !== null) {
@@ -140,7 +141,7 @@ function HomePage() {
   }
   async function deleteDailyConsumption(food: any) {
     await database()
-      .ref(`dailyConsumptions/${currentUserUID}/${food.id}`)
+      .ref(`dailyConsumptions/${currentUserInfo.userID}/${food.id}`)
       .remove();
   }
   const renderDailyConsumptions = ({item}: any) => (

@@ -1,6 +1,7 @@
 import {StyleSheet} from 'react-native';
 import Colors from '../../../Styles/Colors';
 import Fonts from '../../../Styles/Fonts';
+import ModalDefaults from '../../../Styles/ModalDefaults';
 const baseStyles = StyleSheet.create({
   text: {
     textAlign: 'center',
@@ -10,14 +11,10 @@ const baseStyles = StyleSheet.create({
 });
 export default StyleSheet.create({
   container: {
-    backgroundColor: 'white',
-    borderTopLeftRadius: 10,
-    borderTopRightRadius: 10,
-    padding: 10,
+    ...ModalDefaults.container,
   },
   modalContainer: {
-    justifyContent: 'flex-end',
-    margin: 0,
+    ...ModalDefaults.modalContainer,
   },
   text: {
     ...baseStyles.text,

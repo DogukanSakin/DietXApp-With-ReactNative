@@ -15,7 +15,7 @@ export default StyleSheet.create({
     flex: 1,
   },
   line: {
-    borderBottomWidth: 1,
+    borderBottomWidth: 0.5,
     borderColor: Colors.textColor,
     marginTop: 10,
   },
