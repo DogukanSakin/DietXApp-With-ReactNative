@@ -11,6 +11,7 @@ import DailyFoodCard from '../../Components/Cards/Daily Food Card';
 import database from '@react-native-firebase/database';
 import parseContentData from '../../Utils/parseContentData';
 import currentUserInfo from '../../Utils/getUserInfo';
+import BodyMeasurements from '../../Components/Body Measurements';
 const userTEST = {
   age: 18,
   email: 'Nra@nra.com',
@@ -158,18 +159,10 @@ function HomePage() {
         <Text style={styles.welcomeText}>
           Welcome back {currentUserData.userName}!
         </Text>
-        <View style={styles.userBodyMeasureContainer}>
-          <Icon name="weight-kilogram" size={30} color={Colors.iconColor} />
-          <Text style={styles.measureText}>{currentUserData.weight} KG</Text>
-          <Icon
-            name="human-male-height-variant"
-            size={30}
-            color={Colors.iconColor}
-          />
-          <Text style={styles.measureText}>{currentUserData.height} CM</Text>
-          <Icon name="scale" size={30} color={Colors.iconColor} />
-          <Text style={styles.measureText}>BMI : {bmi}</Text>
-        </View>
+        <BodyMeasurements
+          height={currentUserData.height}
+          weight={currentUserData.weight}
+          bmi={bmi}></BodyMeasurements>
       </View>
       <View style={styles.innerContainer}>
         <View style={styles.titleContainer}>
