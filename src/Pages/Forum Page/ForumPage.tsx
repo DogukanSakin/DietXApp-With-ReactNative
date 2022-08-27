@@ -187,7 +187,6 @@ const AllRooms = ({navigation}: any) => {
         users: [
           {id: currentUserInfo.userID, userName: currentUserInfo.userName},
         ],
-        bannedUsers: [{id: '', userName: ''}],
       };
       await database().ref('rooms/').push(roomInfo);
       setLoading(false);

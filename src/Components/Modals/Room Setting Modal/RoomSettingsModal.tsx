@@ -1,5 +1,5 @@
 import React, {FC, useState} from 'react';
-import {Text, View} from 'react-native';
+import {Text, View, FlatList} from 'react-native';
 import Modal from 'react-native-modal';
 import styles from './RoomSettingsModal.style';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
@@ -11,6 +11,7 @@ import {createMaterialTopTabNavigator} from '@react-navigation/material-top-tabs
 import Fonts from '../../../Styles/Fonts';
 import database from '@react-native-firebase/database';
 import {useNavigation} from '@react-navigation/native';
+import UserSearchCard from '../../Cards/User Search Card';
 interface IFormValues {
   roomName: string;
   roomPassword: string;
@@ -19,12 +20,18 @@ interface IModalProps {
   isVisible: boolean;
   onClose: () => void;
   room: any;
+  onLeaveRoom: () => void;
 }
 
-const RoomSettingsModal: FC<IModalProps> = ({isVisible, onClose, room}) => {
+const RoomSettingsModal: FC<IModalProps> = ({
+  isVisible,
+  onClose,
+  room,
+  onLeaveRoom,
+}) => {
   const Tab = createMaterialTopTabNavigator();
   function RoomSettingsPage() {
-    return <RoomSettings room={room}></RoomSettings>;
+    return <RoomSettings room={room} onLeaveRoom={onLeaveRoom}></RoomSettings>;
   }
   function RoomUsersPage() {
     return <RoomUsers room={room}></RoomUsers>;
@@ -116,7 +123,7 @@ const RoomSettingsModal: FC<IModalProps> = ({isVisible, onClose, room}) => {
     </Modal>
   );
 };
-const RoomSettings = ({room}: any) => {
+function RoomSettings({room, onLeaveRoom}: any) {
   const navigation = useNavigation();
   const initialFormValues: IFormValues = {
     roomName: room.name,
@@ -179,21 +186,66 @@ const RoomSettings = ({room}: any) => {
           )}
         </Formik>
       </View>
+
+      <Text style={styles.leaveRoomButton} onPress={onLeaveRoom}>
+        Leave the room{' '}
+      </Text>
     </View>
   );
-};
-const RoomUsers = ({room}: any) => {
+}
+function RoomUsers({room}: any) {
+  const renderUser = ({item}: any) => (
+    <UserSearchCard user={item}></UserSearchCard>
+  );
+  const [roomUsers, setRoomUsers] = useState<any>(room.users);
   return (
     <View style={styles.pageContainer}>
-      <Text>RoomUsers</Text>
+      <InputBox
+        iconName="magnify"
+        placeholder="Search room members..."
+        onChangeText={t => filterUsers(t, room.users, setRoomUsers)}></InputBox>
+      <FlatList data={roomUsers} renderItem={renderUser}></FlatList>
     </View>
   );
-};
-const BannedUsers = ({room}: any) => {
+}
+function BannedUsers({room}: any) {
+  const [bannedUsers, setBannedUsers] = useState<any>(room.bannedUsers);
+  const renderBannedUser = ({item}: any) => (
+    <UserSearchCard
+      user={item}
+      unBanButtonVisible={true}
+      onUnBanUser={handleUnBanUser}></UserSearchCard>
+  );
+  async function handleUnBanUser(user: any) {
+    const filteredRoomBannedList = room.bannedUsers.filter(
+      (bannedUsers: any) => {
+        return bannedUsers.id !== user.id;
+      },
+    );
+    setBannedUsers(filteredRoomBannedList);
+    await database()
+      .ref(`rooms/${room.id}/bannedUsers/`)
+      .set({...filteredRoomBannedList});
+  }
   return (
     <View style={styles.pageContainer}>
-      <Text>BannedUsers</Text>
+      <InputBox
+        iconName="magnify"
+        placeholder="Search room members..."
+        onChangeText={t =>
+          filterUsers(t, room.bannedUsers, setBannedUsers)
+        }></InputBox>
+      <FlatList data={bannedUsers} renderItem={renderBannedUser}></FlatList>
     </View>
   );
-};
+}
+//common function for two pages
+function filterUsers(searchedUserName: string, userData: any, dataSet: any) {
+  const filteredList = userData.filter((user: any) => {
+    const currentUserName = user.userName.trim().toLowerCase();
+    const searchedName = searchedUserName.trim().toLowerCase();
+    return currentUserName.indexOf(searchedName) > -1;
+  });
+  dataSet(filteredList);
+}
 export default RoomSettingsModal;

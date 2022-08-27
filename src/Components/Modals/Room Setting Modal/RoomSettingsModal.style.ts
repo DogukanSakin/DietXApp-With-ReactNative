@@ -43,4 +43,11 @@ export default StyleSheet.create({
     backgroundColor: 'white',
     flex: 1,
   },
+  leaveRoomButton: {
+    marginTop: 20,
+    textAlign: 'center',
+    color: 'red',
+    fontFamily: Fonts.defaultRegularFont,
+    fontSize: 18,
+  },
 });

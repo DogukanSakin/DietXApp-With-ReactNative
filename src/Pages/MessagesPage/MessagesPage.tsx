@@ -12,6 +12,7 @@ import MessageContentInfoModal from '../../Components/Modals/Message Content Inf
 import Fonts from '../../Styles/Fonts';
 import {showMessage} from 'react-native-flash-message';
 import RoomSettingsModal from '../../Components/Modals/Room Setting Modal';
+import SearchRoomUsersModal from '../../Components/Modals/Search Room Users Modal';
 function MessagesPage({route, navigation}: any) {
   const {room} = route.params;
   const [messageInput, setMessageInput] = useState<string>();
@@ -21,6 +22,8 @@ function MessagesPage({route, navigation}: any) {
   const [contentModalMessage, setContentModalMessage] = useState<any>();
   const [isTextInputEnabled, setIsTextInputEnabled] = useState<boolean>(true);
   const [roomSettingsModalVisible, setRoomSettingsModalVisible] =
+    useState<boolean>(false);
+  const [roomUsersModalVisible, setRoomUsersModalVisible] =
     useState<boolean>(false);
   useEffect(() => {
     getRoomMessageData();
@@ -63,8 +66,11 @@ function MessagesPage({route, navigation}: any) {
   function leaveRoomDialogBox() {
     return Alert.alert(
       'Are your sure?',
-      'Are you sure you want to leave the room? If there is a user other than you, the administration is transferred to one of these users. If not, your room will be deleted.',
+      'Are you sure you want to leave the room? If there is a user other than you and you are the administrator for this room, the administration is transferred to one of these users. If not, your room will be deleted.',
       [
+        {
+          text: 'No',
+        },
         {
           text: 'Yes',
           onPress: async () => {
@@ -80,18 +86,16 @@ function MessagesPage({route, navigation}: any) {
                   navigation.navigate('Forum');
                 } else {
                   //If a user other than the administrator is present in the room, the adminship is transferred to the first of these users.
-                  database()
-                    .ref(`rooms/${room.id}/`)
-                    .update({admin: fetchedData[1].id});
+                  if (room.admin === currentUserInfo.userID) {
+                    database()
+                      .ref(`rooms/${room.id}/`)
+                      .update({admin: fetchedData[1].id});
+                  }
                   updateUsersInRoomData(room, currentUserInfo.userID);
                   navigation.navigate('Forum');
                 }
               });
           },
-        },
-
-        {
-          text: 'No',
         },
       ],
     );
@@ -149,6 +153,7 @@ function MessagesPage({route, navigation}: any) {
 
     setMessageContentModalInfoVisible(false);
   }
+
   const renderMessages = ({item}: any) => (
     <MessageCard
       message={item}
@@ -180,6 +185,12 @@ function MessagesPage({route, navigation}: any) {
             size={30}
             color={Colors.darkGreen}
             style={styles.iconContainer}
+            onPress={() =>
+              handleModalVisible(
+                roomUsersModalVisible,
+                setRoomUsersModalVisible,
+              )
+            }
           />
         )}
 
@@ -228,7 +239,15 @@ function MessagesPage({route, navigation}: any) {
             setRoomSettingsModalVisible,
           )
         }
-        room={room}></RoomSettingsModal>
+        room={room}
+        onLeaveRoom={leaveRoomDialogBox}></RoomSettingsModal>
+      <SearchRoomUsersModal
+        isVisible={roomUsersModalVisible}
+        onClose={() =>
+          handleModalVisible(roomUsersModalVisible, setRoomUsersModalVisible)
+        }
+        room={room}
+        onLeaveRoom={leaveRoomDialogBox}></SearchRoomUsersModal>
     </View>
   );
 }
@@ -245,7 +264,6 @@ async function updateUsersInRoomData(room: any, userID: any) {
         return filteredData;
       }
     });
-  console.log([{...result}]);
   await database()
     .ref(`rooms/${room.id}/users/`)
     .set({...result});

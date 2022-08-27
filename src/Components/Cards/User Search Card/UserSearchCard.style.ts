@@ -18,4 +18,14 @@ export default StyleSheet.create({
     textAlign: 'center',
     fontSize: 17,
   },
+  unbanButtonContainer: {
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  unBanButtonText: {
+    fontSize: 15,
+    color: Colors.textColor,
+    fontFamily: Fonts.defaultRegularFont,
+    marginTop: 5,
+  },
 });
