@@ -11,6 +11,7 @@ A simple diet app developed using React Native and TypeScript.
 - You have authority as an admin in the rooms you own. You can ban any user or remove this ban from the user. 
 - Banned users cannot enter your room in any way. Also, if your room has a password, no one except you can join your room without entering the password. 
 - You can update your profile information at any time on the profile page. 
+- If you're the room's admin, the section where you can change room settings will be visible to you. Otherwise, you can only see members in the room. You don't have any authority. 
 
 ## Tools & Resources
 
