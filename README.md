@@ -23,7 +23,7 @@ A simple diet app developed using React Native and TypeScript.
 - [Vector Icons](https://github.com/oblador/react-native-vector-icons) for icons
 - [React Native Modal](https://reactnative.dev/docs/modal) for bottom screen
 - [React Native Bouncy Checkbox](https://github.com/WrathChaos/react-native-bouncy-checkbox) for checkbox
-- [React Native Progress Indicator}(https://www.npmjs.com/package/react-native-circular-progress-indicator) for circle progress bar in home page
+- [React Native Progress Indicator](https://www.npmjs.com/package/react-native-circular-progress-indicator) for circle progress bar in home page
 - [React Native Image Picker](https://github.com/react-native-image-picker/react-native-image-picker) for select and upload images
 - [React Native Formik](https://formik.org/docs/guides/react-native) for sign in/up
 - [React Native Flash Message](https://github.com/lucasferreira/react-native-flash-message) for notifications
