@@ -19,7 +19,7 @@ export default StyleSheet.create({
   welcomeText: {
     color: Colors.textColor,
     fontFamily: Fonts.defaultSemiBoldFont,
-    fontSize: 25,
+    fontSize: 26,
     marginTop: 15,
     marginBottom: 15,
   },
@@ -41,7 +41,7 @@ export default StyleSheet.create({
     color: Colors.darkGreen,
   },
   otherChoiceContainerText: {
-    fontSize: 13,
+    fontSize: 14,
     fontFamily: Fonts.defaultRegularFont,
     color: Colors.textColor,
     flex: 1,

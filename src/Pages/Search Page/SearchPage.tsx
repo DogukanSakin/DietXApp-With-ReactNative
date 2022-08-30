@@ -52,7 +52,7 @@ function SearchPage() {
                   style={{
                     color: focused ? 'white' : Colors.textColor,
                     fontFamily: Fonts.defaultRegularFont,
-                    fontSize: 17,
+                    fontSize: 18,
                   }}>
                   Foods & Drinks
                 </Text>
@@ -79,7 +79,7 @@ function SearchPage() {
                   style={{
                     color: focused ? 'white' : Colors.textColor,
                     fontFamily: Fonts.defaultRegularFont,
-                    fontSize: 17,
+                    fontSize: 18,
                   }}>
                   Users
                 </Text>
@@ -158,7 +158,7 @@ const SearchFoodsAndDrinks = () => {
         .then(snapshot => {
           if (snapshot.exists()) {
             const existData = snapshot.val();
-            const parsedData = parseContentData(existData);
+            const parsedData: any = parseContentData(existData);
             database()
               .ref(
                 `dailyConsumptions/${currentUserInfo.userID}/${parsedData[0].id}/`,
@@ -235,7 +235,7 @@ const SearchFoodsAndDrinks = () => {
     </View>
   );
 };
-const SearchUsers = () => {
+const SearchUsers = ({navigation}: any) => {
   const [userData, setUserData] = useState<any>(null);
   const [loading, setLoading] = useState<boolean>(false);
   async function searchUser(searchedUserName: string) {
@@ -262,7 +262,19 @@ const SearchUsers = () => {
       }
     }
   }
-  const renderUser = ({item}: any) => <SearchUserCard user={item} />;
+  function goUserInfoPage(user: any) {
+    if (user.id === currentUserInfo.userID) {
+      navigation.navigate('Profile' as never);
+    } else {
+      navigation.navigate('UserInfo' as never, {userInfo: user} as never);
+    }
+  }
+  const renderUser = ({item}: any) => (
+    <SearchUserCard
+      user={item}
+      onUserInfoVisible={() => goUserInfoPage(item)}
+    />
+  );
   return (
     <View style={styles.container}>
       <InputBox

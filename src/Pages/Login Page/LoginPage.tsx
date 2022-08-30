@@ -12,7 +12,7 @@ interface IFormValues {
   email: string;
   password: string;
 }
-const LoginPage: FC<IFormValues> = ({navigation}: any) => {
+const LoginPage = ({navigation}: any) => {
   const [loading, setLoading] = useState<boolean>(false);
   const initialValues: IFormValues = {
     email: '',

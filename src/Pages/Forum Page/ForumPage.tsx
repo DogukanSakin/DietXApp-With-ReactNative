@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-shadow */
 /* eslint-disable react-native/no-inline-styles */
 import React, {useState, useEffect} from 'react';
 import {Dimensions, FlatList, Text, View} from 'react-native';
@@ -42,7 +43,7 @@ function ForumPage() {
                   style={{
                     color: focused ? 'white' : Colors.textColor,
                     fontFamily: Fonts.defaultRegularFont,
-                    fontSize: 17,
+                    fontSize: 18,
                   }}>
                   All Rooms
                 </Text>
@@ -69,7 +70,7 @@ function ForumPage() {
                   style={{
                     color: focused ? 'white' : Colors.textColor,
                     fontFamily: Fonts.defaultRegularFont,
-                    fontSize: 17,
+                    fontSize: 18,
                   }}>
                   My Rooms
                 </Text>
@@ -86,23 +87,27 @@ const MyRooms = ({navigation}: any) => {
   const [filteredRoomData, setFilteredRoomData] = useState<any>(null);
   const [checkRoomPasswordModalVisible, setCheckRoomPasswordModalVisible] =
     useState<boolean>(false);
-  const [roomForCheckPassword, setRoomForCheckPassword] = useState<any>();
+  const [roomForCheckPassword, setRoomForCheckPassword] = useState<any>({});
   useEffect(() => {
     fetchMyRoomsData();
   }, []);
   async function fetchMyRoomsData() {
-    const fetchedDataArray: any = [];
-    await database()
-      .ref('rooms')
-      .orderByChild('users')
-      .on('value', function (snapshot) {
-        snapshot.forEach(function (data): any {
-          if (data.val().users[0].id === currentUserInfo.userID) {
-            fetchedDataArray.push(data.val());
-          }
+    try {
+      const fetchedDataArray: any = [];
+      await database()
+        .ref('rooms')
+        .orderByChild('users')
+        .on('value', function (snapshot) {
+          snapshot.forEach(function (data): any {
+            if (data.val().users[0].id === currentUserInfo.userID) {
+              fetchedDataArray.push(data.val());
+            }
+          });
+          setMyRoomsData(fetchedDataArray);
         });
-        setMyRoomsData(fetchedDataArray);
-      });
+    } catch (error) {
+      console.log(error);
+    }
   }
   const renderRooms = ({item}: any) => (
     <RoomCard
@@ -167,9 +172,12 @@ const AllRooms = ({navigation}: any) => {
       .on('value', snapshot => {
         const fetchedData = snapshot.val();
         if (fetchedData != null) {
-          const parsedData = parseContentData(fetchedData);
-
-          setRoomsData(parsedData);
+          try {
+            const parsedData: any = parseContentData(fetchedData);
+            setRoomsData(parsedData);
+          } catch (error) {
+            console.log(error);
+          }
         } else {
           setRoomsData([]);
           setFilteredRoomData(null);

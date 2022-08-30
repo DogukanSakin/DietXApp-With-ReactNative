@@ -9,13 +9,13 @@ export default StyleSheet.create({
   keyText: {
     color: Colors.textColor,
     fontFamily: Fonts.defaultRegularFont,
-    fontSize: 15,
+    fontSize: 14,
     flex: 1,
   },
   valueText: {
     color: Colors.textColor,
     fontFamily: Fonts.defaultRegularFont,
-    fontSize: 15,
+    fontSize: 14,
   },
   innerContainer: {
     flexDirection: 'row',

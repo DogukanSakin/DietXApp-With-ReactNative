@@ -4,7 +4,7 @@ import Fonts from '../../../Styles/Fonts';
 const baseStyle = StyleSheet.create({
   text: {
     fontFamily: Fonts.defaultRegularFont,
-    fontSize: 15,
+    fontSize: 14,
     color: Colors.textColor,
   },
 });

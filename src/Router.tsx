@@ -19,9 +19,10 @@ import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import Colors from './Styles/Colors';
 import Fonts from './Styles/Fonts';
 import MessagesPage from './Pages/MessagesPage';
-const Stack = createNativeStackNavigator();
-const Tab = createBottomTabNavigator();
-const Router = () => {
+import UserInfoPage from './Pages/User Info Page';
+function Router() {
+  const Stack = createNativeStackNavigator();
+  const Tab = createBottomTabNavigator();
   const [userSession, setUserSession] = useState<boolean>();
   useEffect(() => {
     auth().onAuthStateChanged(user => {
@@ -35,14 +36,16 @@ const Router = () => {
         <Stack.Screen name="Register" component={RegisterPage} />
         <Stack.Screen
           name="SearchWithoutLogin"
-          component={SearchWithoutLoginPage}></Stack.Screen>
+          component={SearchWithoutLoginPage}
+        />
       </Stack.Navigator>
     );
   };
+
   const LoginnedUserForumStack = ({navigation, route}: any) => {
     useLayoutEffect(() => {
       const routeName = getFocusedRouteNameFromRoute(route);
-      if (routeName === 'Messages') {
+      if (routeName === 'Messages' || routeName === 'UserInfo') {
         navigation.setOptions({tabBarStyle: {display: 'none'}});
       } else {
         navigation.setOptions({tabBarStyle: {display: 'flex'}});
@@ -52,6 +55,23 @@ const Router = () => {
       <Stack.Navigator screenOptions={{headerShown: false}}>
         <Stack.Screen name="Forum" component={ForumPage} />
         <Stack.Screen name="Messages" component={MessagesPage} />
+        <Stack.Screen name="UserInfo" component={UserInfoPage} />
+      </Stack.Navigator>
+    );
+  };
+  const SearchPageStack = ({navigation, route}: any) => {
+    useLayoutEffect(() => {
+      const routeName = getFocusedRouteNameFromRoute(route);
+      if (routeName === 'UserInfo') {
+        navigation.setOptions({tabBarStyle: {display: 'none'}});
+      } else {
+        navigation.setOptions({tabBarStyle: {display: 'flex'}});
+      }
+    }, [navigation, route]);
+    return (
+      <Stack.Navigator screenOptions={{headerShown: false}}>
+        <Stack.Screen name="Search" component={SearchPage} />
+        <Stack.Screen name="UserInfo" component={UserInfoPage} />
       </Stack.Navigator>
     );
   };
@@ -80,17 +100,16 @@ const Router = () => {
                     <Icon
                       name="home"
                       size={25}
-                      color={
-                        focused ? Colors.darkGreen : Colors.menuGrey
-                      }></Icon>
+                      color={focused ? Colors.darkGreen : Colors.menuGrey}
+                    />
                   </View>
                 );
               },
             }}
           />
           <Tab.Screen
-            name="Search"
-            component={SearchPage}
+            name="SearchStack"
+            component={SearchPageStack}
             options={{
               tabBarLabel: ({focused}) => {
                 return (
@@ -109,9 +128,8 @@ const Router = () => {
                     <Icon
                       name="magnify"
                       size={25}
-                      color={
-                        focused ? Colors.darkGreen : Colors.menuGrey
-                      }></Icon>
+                      color={focused ? Colors.darkGreen : Colors.menuGrey}
+                    />
                   </View>
                 );
               },
@@ -138,9 +156,8 @@ const Router = () => {
                     <Icon
                       name="forum"
                       size={25}
-                      color={
-                        focused ? Colors.darkGreen : Colors.menuGrey
-                      }></Icon>
+                      color={focused ? Colors.darkGreen : Colors.menuGrey}
+                    />
                   </View>
                 );
               },
@@ -167,9 +184,8 @@ const Router = () => {
                     <Icon
                       name="account"
                       size={25}
-                      color={
-                        focused ? Colors.darkGreen : Colors.menuGrey
-                      }></Icon>
+                      color={focused ? Colors.darkGreen : Colors.menuGrey}
+                    />
                   </View>
                 );
               },
@@ -180,11 +196,12 @@ const Router = () => {
         <Stack.Navigator screenOptions={{headerShown: false}}>
           <Stack.Screen
             name="LoginRegisterStack"
-            component={LoginRegisterStack}></Stack.Screen>
+            component={LoginRegisterStack}
+          />
         </Stack.Navigator>
       )}
       <FlashMessage position="top" />
     </NavigationContainer>
   );
-};
+}
 export default Router;

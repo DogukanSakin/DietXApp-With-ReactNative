@@ -1,23 +1,23 @@
-import { launchImageLibrary} from 'react-native-image-picker';
-export default  async function getImage(){
+import {launchImageLibrary} from 'react-native-image-picker';
+export default async function getImage() {
   let options = {
     title: 'Select Image',
     allowsEditing: true,
-    quality:0.9,
+    quality: 0.9,
     noData: true,
-    maxWidth:1200,
-    maxHeight:1200,
-    mediaType: "photo",
+    maxWidth: 1200,
+    maxHeight: 1200,
+    mediaType: 'photo',
     customButtons: [
-      { name: 'customOptionKey', title: 'Choose Photo from Custom Option' },
+      {name: 'customOptionKey', title: 'Choose Photo from Custom Option'},
     ],
     storageOptions: {
-        skipBackup: true,
-        cameraRoll: false
+      skipBackup: true,
+      cameraRoll: false,
     },
   };
 
-  let imageRes= await launchImageLibrary(options, response => {
+  let imageRes = await launchImageLibrary(options, response => {
     //console.log('Response = ', response);
 
     if (response.didCancel) {
@@ -28,15 +28,11 @@ export default  async function getImage(){
       console.log('User tapped custom button: ', response.customButton);
       alert(response.customButton);
     } else {
+      const result = response;
 
-        const previewFileName= response.assets[0].uri;
-        return previewFileName;
-       
-      
+      return result;
     }
   });
-  return imageRes;
-}
 
-   
-      
+  return imageRes.assets[0].uri;
+}

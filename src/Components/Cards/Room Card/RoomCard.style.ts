@@ -13,7 +13,7 @@ export default StyleSheet.create({
   roomNameText: {
     color: Colors.textColor,
     fontFamily: Fonts.defaultRegularFont,
-    fontSize: 17,
+    fontSize: 18,
     textAlign: 'center',
   },
   innerContainer: {
@@ -25,7 +25,7 @@ export default StyleSheet.create({
   roomInfoText: {
     color: Colors.textColor,
     fontFamily: Fonts.defaultRegularFont,
-    fontSize: 17,
+    fontSize: 18,
     marginLeft: 5,
   },
   titleContainer: {

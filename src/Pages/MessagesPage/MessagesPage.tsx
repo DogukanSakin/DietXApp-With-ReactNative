@@ -1,3 +1,5 @@
+/* eslint-disable react-hooks/exhaustive-deps */
+/* eslint-disable @typescript-eslint/no-shadow */
 import React, {useState, useEffect} from 'react';
 import {Text, View, FlatList, Alert} from 'react-native';
 import MessageCard from '../../Components/Cards/Message Card';
@@ -15,6 +17,7 @@ import RoomSettingsModal from '../../Components/Modals/Room Setting Modal';
 import SearchRoomUsersModal from '../../Components/Modals/Search Room Users Modal';
 function MessagesPage({route, navigation}: any) {
   const {room} = route.params;
+
   const [messageInput, setMessageInput] = useState<string>();
   const [roomMessageData, setRoomMessageData] = useState<any>();
   const [messageContentInfoModalVisible, setMessageContentModalInfoVisible] =
@@ -53,15 +56,19 @@ function MessagesPage({route, navigation}: any) {
       });
   }
   async function getRoomMessageData() {
-    await database()
-      .ref(`rooms/${room.id}/messages/`)
-      .on('value', snapshot => {
-        const fetchedData = snapshot.val();
-        if (fetchedData != null) {
-          const parsedData = parseContentData(fetchedData, true);
-          setRoomMessageData(parsedData);
-        }
-      });
+    try {
+      await database()
+        .ref(`rooms/${room.id}/messages/`)
+        .on('value', snapshot => {
+          const fetchedData = snapshot.val();
+          if (fetchedData != null) {
+            const parsedData: any = parseContentData(fetchedData, true);
+            setRoomMessageData(parsedData);
+          }
+        });
+    } catch (error) {
+      console.log(error);
+    }
   }
   function leaveRoomDialogBox() {
     return Alert.alert(
@@ -74,27 +81,31 @@ function MessagesPage({route, navigation}: any) {
         {
           text: 'Yes',
           onPress: async () => {
-            await database()
-              .ref(`rooms/${room.id}/users/`)
-              .once('value')
-              .then(async snapshot => {
-                const fetchedData = snapshot.val();
-                const dataLength = fetchedData.length;
-                if (dataLength == 1) {
-                  //If the room has only one member and the admin leaves the room voluntarily, the room is deleted
-                  await database().ref(`rooms/${room.id}`).remove();
-                  navigation.navigate('Forum');
-                } else {
-                  //If a user other than the administrator is present in the room, the adminship is transferred to the first of these users.
-                  if (room.admin === currentUserInfo.userID) {
-                    database()
-                      .ref(`rooms/${room.id}/`)
-                      .update({admin: fetchedData[1].id});
+            try {
+              await database()
+                .ref(`rooms/${room.id}/users/`)
+                .once('value')
+                .then(async snapshot => {
+                  const fetchedData = snapshot.val();
+                  const dataLength = fetchedData.length;
+                  if (dataLength == 1) {
+                    //If the room has only one member and the admin leaves the room voluntarily, the room is deleted
+                    await database().ref(`rooms/${room.id}`).remove();
+                    navigation.navigate('Forum');
+                  } else {
+                    //If a user other than the administrator is present in the room, the adminship is transferred to the first of these users.
+                    if (room.admin === currentUserInfo.userID) {
+                      database()
+                        .ref(`rooms/${room.id}/`)
+                        .update({admin: fetchedData[1].id});
+                    }
+                    updateUsersInRoomData(room, currentUserInfo.userID);
+                    navigation.navigate('Forum');
                   }
-                  updateUsersInRoomData(room, currentUserInfo.userID);
-                  navigation.navigate('Forum');
-                }
-              });
+                });
+            } catch (error) {
+              console.log(error);
+            }
           },
         },
       ],
@@ -160,7 +171,8 @@ function MessagesPage({route, navigation}: any) {
       onOpenMessageContentInfo={() =>
         handleMessageContentInfoModalVisible(item)
       }
-      roomAdmin={room.admin}></MessageCard>
+      roomAdmin={room.admin}
+    />
   );
   return (
     <View style={styles.container}>
@@ -240,14 +252,16 @@ function MessagesPage({route, navigation}: any) {
           )
         }
         room={room}
-        onLeaveRoom={leaveRoomDialogBox}></RoomSettingsModal>
+        onLeaveRoom={leaveRoomDialogBox}
+      />
       <SearchRoomUsersModal
         isVisible={roomUsersModalVisible}
         onClose={() =>
           handleModalVisible(roomUsersModalVisible, setRoomUsersModalVisible)
         }
         room={room}
-        onLeaveRoom={leaveRoomDialogBox}></SearchRoomUsersModal>
+        onLeaveRoom={leaveRoomDialogBox}
+      />
     </View>
   );
 }

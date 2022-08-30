@@ -5,7 +5,6 @@ import MainButton from '../../Buttons/MainButton';
 import InputBox from '../../InputBox';
 import styles from './CheckRoomPasswordModal.style';
 import {useNavigation} from '@react-navigation/native';
-import currentUserInfo from '../../../Utils/getUserInfo';
 interface IModalProps {
   isVisible: boolean;
   onClose: () => void;

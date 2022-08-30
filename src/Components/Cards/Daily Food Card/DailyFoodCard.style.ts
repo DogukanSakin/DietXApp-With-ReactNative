@@ -21,13 +21,13 @@ export default StyleSheet.create({
     fontFamily: Fonts.defaultRegularFont,
     marginTop: 10,
     marginBottom: 10,
-    fontSize: 15,
+    fontSize: 14,
   },
   foodNameText: {
     fontFamily: Fonts.defaultRegularFont,
     color: Colors.textColor,
     marginTop: 10,
     marginBottom: 10,
-    fontSize: 17,
+    fontSize: 18,
   },
 });

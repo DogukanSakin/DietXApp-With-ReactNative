@@ -12,7 +12,7 @@ export default StyleSheet.create({
   measureText: {
     color: Colors.textColor,
     fontFamily: Fonts.defaultRegularFont,
-    fontSize: 15,
+    fontSize: 14,
     padding: 10,
   },
   rowContainer: {

@@ -14,6 +14,7 @@ import {showMessage} from 'react-native-flash-message';
 import firebaseAuthErrorParser from '../../Utils/firebaseAuthErrorParser';
 import auth from '@react-native-firebase/auth';
 import database from '@react-native-firebase/database';
+import storage from '@react-native-firebase/storage';
 interface IFormValues {
   email: string;
   password: string;
@@ -100,6 +101,22 @@ const RegisterPage: FC<IFormValues> = ({navigation}: any) => {
           );
           const currUserUID = auth().currentUser?.uid;
           await database().ref(`users/${currUserUID}/`).set(newUser);
+          if (newUser.profilePhotoURL != null) {
+            const imageName = newUser.profilePhotoURL.substring(
+              newUser.profilePhotoURL.lastIndexOf('/') + 1,
+            );
+            const task = storage()
+              .ref(imageName)
+              .putFile(newUser.profilePhotoURL);
+            task.on('state_changed', taskSnapshot => {
+              console.log(
+                `${taskSnapshot.bytesTransferred} transferred out of ${taskSnapshot.totalBytes}`,
+              );
+            });
+            async () => {
+              await task;
+            };
+          }
           setLoading(false);
         } catch (error: any) {
           setLoading(false);

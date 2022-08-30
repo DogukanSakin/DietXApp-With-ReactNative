@@ -12,7 +12,7 @@ export default StyleSheet.create({
   title: {
     color: Colors.textColor,
     fontFamily: Fonts.defaultRegularFont,
-    fontSize: 17,
+    fontSize: 18,
     textAlign: 'center',
   },
   line: {
@@ -28,7 +28,7 @@ export default StyleSheet.create({
     marginBottom: 10,
   },
   text: {
-    fontSize: 13,
+    fontSize: 14,
     fontFamily: Fonts.defaultRegularFont,
     color: Colors.textColor,
     flex: 1,
@@ -36,7 +36,7 @@ export default StyleSheet.create({
   },
   warningText: {
     color: 'red',
-    fontSize: 13,
+    fontSize: 14,
     fontFamily: Fonts.defaultRegularFont,
   },
 });

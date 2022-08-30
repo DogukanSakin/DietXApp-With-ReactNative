@@ -5,7 +5,7 @@ import ModalDefaults from '../../../Styles/ModalDefaults';
 const baseTextStyle = StyleSheet.create({
   baseText: {
     fontFamily: Fonts.defaultRegularFont,
-    fontSize: 15,
+    fontSize: 14,
     textAlign: 'center',
     marginTop: 10,
     marginBottom: 10,

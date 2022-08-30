@@ -1,3 +1,4 @@
+/* eslint-disable react-native/no-inline-styles */
 import React, {FC, useState} from 'react';
 import {Text, View, FlatList} from 'react-native';
 import Modal from 'react-native-modal';
@@ -12,6 +13,7 @@ import Fonts from '../../../Styles/Fonts';
 import database from '@react-native-firebase/database';
 import {useNavigation} from '@react-navigation/native';
 import UserSearchCard from '../../Cards/User Search Card';
+import currentUserInfo from '../../../Utils/getUserInfo';
 interface IFormValues {
   roomName: string;
   roomPassword: string;
@@ -31,13 +33,13 @@ const RoomSettingsModal: FC<IModalProps> = ({
 }) => {
   const Tab = createMaterialTopTabNavigator();
   function RoomSettingsPage() {
-    return <RoomSettings room={room} onLeaveRoom={onLeaveRoom}></RoomSettings>;
+    return <RoomSettings room={room} onLeaveRoom={onLeaveRoom} />;
   }
   function RoomUsersPage() {
-    return <RoomUsers room={room}></RoomUsers>;
+    return <RoomUsers room={room} />;
   }
   function RoomBannedUsersPage() {
-    return <BannedUsers room={room}></BannedUsers>;
+    return <BannedUsers room={room} />;
   }
   return (
     <Modal
@@ -51,7 +53,8 @@ const RoomSettingsModal: FC<IModalProps> = ({
             name="chevron-left"
             size={30}
             color={Colors.iconColor}
-            onPress={onClose}></Icon>
+            onPress={onClose}
+          />
           <Text style={styles.titleText}>{room.name}'s Settings</Text>
         </View>
         <Tab.Navigator
@@ -74,7 +77,7 @@ const RoomSettingsModal: FC<IModalProps> = ({
                     style={{
                       color: focused ? Colors.darkGreen : Colors.textColor,
                       fontFamily: Fonts.defaultRegularFont,
-                      fontSize: 17,
+                      fontSize: 14,
                     }}>
                     Room Settings
                   </Text>
@@ -92,7 +95,7 @@ const RoomSettingsModal: FC<IModalProps> = ({
                     style={{
                       color: focused ? Colors.darkGreen : Colors.textColor,
                       fontFamily: Fonts.defaultRegularFont,
-                      fontSize: 17,
+                      fontSize: 14,
                     }}>
                     Users
                   </Text>
@@ -110,7 +113,7 @@ const RoomSettingsModal: FC<IModalProps> = ({
                     style={{
                       color: focused ? Colors.darkGreen : Colors.textColor,
                       fontFamily: Fonts.defaultRegularFont,
-                      fontSize: 17,
+                      fontSize: 14,
                     }}>
                     Banned Users
                   </Text>
@@ -138,9 +141,9 @@ function RoomSettings({room, onLeaveRoom}: any) {
         formValues.roomPassword = formValues.roomPassword.trim();
         const newRoomValues = {
           name: formValues.roomName,
-          isPrivate: formValues.roomPassword != '' ? true : false,
+          isPrivate: formValues.roomPassword !== '' ? true : false,
           password:
-            formValues.roomPassword != '' ? formValues.roomPassword : null,
+            formValues.roomPassword !== '' ? formValues.roomPassword : null,
         };
         await database().ref(`rooms/${room.id}/`).update(newRoomValues);
         navigation.navigate('Forum' as never);
@@ -163,9 +166,10 @@ function RoomSettings({room, onLeaveRoom}: any) {
               <InputBox
                 iconName="rename-box"
                 onChangeText={handleChange('roomName')}
-                value={values.roomName}></InputBox>
+                value={values.roomName}
+              />
 
-              <View style={styles.line}></View>
+              <View style={styles.line} />
               <Text style={styles.placeHolderText}>
                 Change room password: (Optional)
               </Text>
@@ -173,7 +177,8 @@ function RoomSettings({room, onLeaveRoom}: any) {
                 iconName="lock"
                 onChangeText={handleChange('roomPassword')}
                 value={values.roomPassword}
-                secureTextEntry={true}></InputBox>
+                secureTextEntry={true}
+              />
               <Text style={styles.placeHolderText}>
                 *If you want to make the room public, just delete the password
                 and save it.{' '}
@@ -181,45 +186,56 @@ function RoomSettings({room, onLeaveRoom}: any) {
               <MainButton
                 title="Save changes"
                 onPress={handleSubmit}
-                loading={loading}></MainButton>
+                loading={loading}
+              />
             </>
           )}
         </Formik>
       </View>
 
       <Text style={styles.leaveRoomButton} onPress={onLeaveRoom}>
-        Leave the room{' '}
+        Leave the room
       </Text>
     </View>
   );
 }
 function RoomUsers({room}: any) {
+  const navigation = useNavigation();
   const renderUser = ({item}: any) => (
-    <UserSearchCard user={item}></UserSearchCard>
+    <UserSearchCard
+      user={item}
+      onUserInfoVisible={() => goUserInfoPage(navigation, item)}
+    />
   );
+
   const [roomUsers, setRoomUsers] = useState<any>(room.users);
+
   return (
     <View style={styles.pageContainer}>
       <InputBox
         iconName="magnify"
         placeholder="Search room members..."
-        onChangeText={t => filterUsers(t, room.users, setRoomUsers)}></InputBox>
-      <FlatList data={roomUsers} renderItem={renderUser}></FlatList>
+        onChangeText={t => filterUsers(t, room.users, setRoomUsers)}
+      />
+      <FlatList data={roomUsers} renderItem={renderUser} />
     </View>
   );
 }
 function BannedUsers({room}: any) {
+  const navigation = useNavigation();
   const [bannedUsers, setBannedUsers] = useState<any>(room.bannedUsers);
   const renderBannedUser = ({item}: any) => (
     <UserSearchCard
       user={item}
       unBanButtonVisible={true}
-      onUnBanUser={handleUnBanUser}></UserSearchCard>
+      onUnBanUser={handleUnBanUser}
+      onUserInfoVisible={() => goUserInfoPage(navigation, item)}
+    />
   );
   async function handleUnBanUser(user: any) {
     const filteredRoomBannedList = room.bannedUsers.filter(
-      (bannedUsers: any) => {
-        return bannedUsers.id !== user.id;
+      (bannedUser: any) => {
+        return bannedUser.id !== user.id;
       },
     );
     setBannedUsers(filteredRoomBannedList);
@@ -232,10 +248,9 @@ function BannedUsers({room}: any) {
       <InputBox
         iconName="magnify"
         placeholder="Search room members..."
-        onChangeText={t =>
-          filterUsers(t, room.bannedUsers, setBannedUsers)
-        }></InputBox>
-      <FlatList data={bannedUsers} renderItem={renderBannedUser}></FlatList>
+        onChangeText={t => filterUsers(t, room.bannedUsers, setBannedUsers)}
+      />
+      <FlatList data={bannedUsers} renderItem={renderBannedUser} />
     </View>
   );
 }
@@ -248,4 +263,12 @@ function filterUsers(searchedUserName: string, userData: any, dataSet: any) {
   });
   dataSet(filteredList);
 }
+function goUserInfoPage(navigation: any, user: any) {
+  if (user.id === currentUserInfo.userID) {
+    navigation.navigate('Profile' as never);
+  } else {
+    navigation.navigate('UserInfo' as never, {user: user} as never);
+  }
+}
+
 export default RoomSettingsModal;

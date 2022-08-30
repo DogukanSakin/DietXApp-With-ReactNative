@@ -50,7 +50,7 @@ export default StyleSheet.create({
   genderText: {
     color: Colors.darkGreen,
     fontFamily: Fonts.defaultRegularFont,
-    fontSize: 15,
+    fontSize: 14,
     marginTop: 10,
   },
   formInnerContainer: {

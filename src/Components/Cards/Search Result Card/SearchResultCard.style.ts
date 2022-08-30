@@ -24,12 +24,12 @@ export default StyleSheet.create({
   calText: {
     color: Colors.darkGreen,
     fontFamily: Fonts.defaultSemiBoldFont,
-    fontSize: 15,
+    fontSize: 14,
     marginBottom: 10,
   },
   nameText: {
     color: Colors.textColor,
-    fontSize: 17,
+    fontSize: 18,
     fontFamily: Fonts.defaultRegularFont,
     marginBottom: 10,
   },

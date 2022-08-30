@@ -33,7 +33,7 @@ export default StyleSheet.create({
   measureText: {
     color: Colors.textColor,
     fontFamily: Fonts.defaultRegularFont,
-    fontSize: 15,
+    fontSize: 14,
     padding: 10,
   },
   titleContainer: {
@@ -109,5 +109,13 @@ export default StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  profilePhotoContainer: {
+    width: 50,
+    height: 50,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 10,
+    borderRadius: 50,
   },
 });

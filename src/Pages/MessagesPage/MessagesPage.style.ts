@@ -9,7 +9,7 @@ export default StyleSheet.create({
   },
   roomNameText: {
     color: Colors.textColor,
-    fontSize: 17,
+    fontSize: 18,
     fontFamily: Fonts.defaultSemiBoldFont,
     textAlign: 'center',
     flex: 1,

@@ -1,7 +1,14 @@
 /* eslint-disable react-native/no-inline-styles */
 
 import React, {useEffect, useState} from 'react';
-import {ActivityIndicator, FlatList, Text, View} from 'react-native';
+import {
+  ActivityIndicator,
+  FlatList,
+  Text,
+  View,
+  Image,
+  TouchableWithoutFeedback,
+} from 'react-native';
 import styles from './HomePage.style';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import Colors from '../../Styles/Colors';
@@ -12,31 +19,19 @@ import database from '@react-native-firebase/database';
 import parseContentData from '../../Utils/parseContentData';
 import currentUserInfo from '../../Utils/getUserInfo';
 import BodyMeasurements from '../../Components/Body Measurements';
-const userTEST = {
-  age: 18,
-  email: 'Nra@nra.com',
-  gender: 'Male',
-  height: 188,
-  userName: 'Nra',
-  weight: 90,
-};
-const totalUserDailyConsumptionsTEST = {
-  totalCal: 250,
-  totalProtein: 15,
-  totalFat: 50,
-  totalCarbohydrate: 750,
-};
-function HomePage() {
-  const [currentUserData, setCurrentUserData] = useState<any>(userTEST);
+import storage from '@react-native-firebase/storage';
+function HomePage({navigation}: any) {
+  const [currentUserData, setCurrentUserData] = useState<any>({});
   const [
     currentUserDailyConsumptionsTotals,
     setCurrentUserDailyConsumptionsTotals,
-  ] = useState<any>(totalUserDailyConsumptionsTEST);
+  ] = useState<any>({});
   const [currentUserDailyConsumptions, setCurrentUserDailyConsumptions] =
     useState<any>();
   const [bmi, setBMI] = useState<number>(0);
   const [dailyTotalCal, setDailyTotalCal] = useState<number>(0);
   const [loading, setLoading] = useState<boolean>();
+  const [profilePhotoURL, setProfilePhotoURL] = useState<any>(null);
   useEffect(() => {
     fetchAllData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -48,97 +43,101 @@ function HomePage() {
     setLoading(false);
   }
   async function fetchCurrentUserInfo() {
-    //Here, the daily calorie needs of the user are calculated using formulas.
-    await database()
-      .ref(`users/${currentUserInfo.userID}`)
-      .on('value', snapshot => {
-        const fetchedData = snapshot.val();
+    try {
+      //Here, the daily calorie needs of the user are calculated using formulas.
+      await database()
+        .ref(`users/${currentUserInfo.userID}`)
+        .on('value', snapshot => {
+          const fetchedData = snapshot.val();
 
-        if (fetchedData != undefined || fetchedData != null) {
-          setCurrentUserData(fetchedData);
-          if (fetchedData.weight && fetchedData.height) {
-            const BMI = Math.floor(
-              Math.floor(fetchedData.weight) /
-                ((Math.floor(fetchedData.height) / 100) *
-                  (Math.floor(fetchedData.height) / 100)),
-            );
-            setBMI(BMI);
-          }
-          if (
-            fetchedData.gender &&
-            fetchedData.weight &&
-            fetchedData.height &&
-            fetchedData.weight &&
-            fetchedData.age
-          ) {
-            if (fetchedData.gender === 'Male') {
-              const BMR = Math.floor(
-                66.5 +
-                  13.75 * Math.floor(fetchedData.weight) +
-                  5.003 * Math.floor(fetchedData.height) -
-                  6.75 * Math.floor(fetchedData.age),
+          if (fetchedData != undefined || fetchedData != null) {
+            setCurrentUserData(fetchedData);
+            if (fetchedData.weight && fetchedData.height) {
+              const BMI = Math.floor(
+                Math.floor(fetchedData.weight) /
+                  ((Math.floor(fetchedData.height) / 100) *
+                    (Math.floor(fetchedData.height) / 100)),
               );
-              setDailyTotalCal(BMR);
-            } else {
-              const BMR = Math.floor(
-                655.1 +
-                  9.563 * Math.floor(fetchedData.weight) +
-                  1.85 * Math.floor(fetchedData.height) -
-                  4.676 * Math.floor(fetchedData.age),
-              );
-              setDailyTotalCal(BMR);
+              setBMI(BMI);
+            }
+            if (
+              fetchedData.gender &&
+              fetchedData.weight &&
+              fetchedData.height &&
+              fetchedData.weight &&
+              fetchedData.age
+            ) {
+              if (fetchedData.gender === 'Male') {
+                const BMR = Math.floor(
+                  66.5 +
+                    13.75 * Math.floor(fetchedData.weight) +
+                    5.003 * Math.floor(fetchedData.height) -
+                    6.75 * Math.floor(fetchedData.age),
+                );
+                setDailyTotalCal(BMR);
+              } else {
+                const BMR = Math.floor(
+                  655.1 +
+                    9.563 * Math.floor(fetchedData.weight) +
+                    1.85 * Math.floor(fetchedData.height) -
+                    4.676 * Math.floor(fetchedData.age),
+                );
+                setDailyTotalCal(BMR);
+              }
+            }
+            if (fetchedData.profilePhotoURL) {
+              storage()
+                .ref('/' + fetchedData.profilePhotoURL)
+                .getDownloadURL()
+                .then(url => {
+                  setProfilePhotoURL(url);
+                })
+                .catch(e => console.log('Errors while downloading => ', e));
             }
           }
-        } else {
-          const BMI = Math.floor(
-            Math.floor(userTEST.weight) /
-              ((Math.floor(userTEST.height) / 100) *
-                (Math.floor(userTEST.height) / 100)),
-          );
-          setBMI(BMI);
-          const BMR = Math.floor(
-            66.5 +
-              13.75 * Math.floor(userTEST.weight) +
-              5.003 * Math.floor(userTEST.height) -
-              6.75 * Math.floor(userTEST.age),
-          );
-          setDailyTotalCal(BMR);
-          setCurrentUserData(userTEST);
-        }
-      });
+        });
+    } catch (error) {
+      console.log(error);
+    }
   }
-  async function fetchCurrentUserDailyConsumptions() {
-    //The values of the nutrients consumed by the user daily are calculated here.
-    await database()
-      .ref(`dailyConsumptions/${currentUserInfo.userID}`)
-      .on('value', snapshot => {
-        const fetchedData = snapshot.val();
-        if (fetchedData !== undefined || fetchedData !== null) {
-          const parsedData = parseContentData(fetchedData);
-          const parsedDataLength = parsedData.length;
-          let cal = 0,
-            protein = 0,
-            fat = 0,
-            carbohydrate = 0;
-          for (let index = 0; index < parsedDataLength; index++) {
-            cal += parsedData[index].cal;
-            protein += parsedData[index].protein;
-            fat += parsedData[index].fat;
-            carbohydrate += parsedData[index].fat;
-          }
-          const totalUserDailyConsumptions = {
-            totalCal: cal,
-            totalProtein: protein,
-            totalFat: fat,
-            totalCarbohydrate: carbohydrate,
-          };
 
-          setCurrentUserDailyConsumptionsTotals(totalUserDailyConsumptions);
-          setCurrentUserDailyConsumptions(parsedData);
-        } else {
-          setCurrentUserDailyConsumptionsTotals(totalUserDailyConsumptionsTEST);
-        }
-      });
+  async function fetchCurrentUserDailyConsumptions() {
+    try {
+      //The values of the nutrients consumed by the user daily are calculated here.
+      await database()
+        .ref(`dailyConsumptions/${currentUserInfo.userID}`)
+        .on('value', snapshot => {
+          const fetchedData = snapshot.val();
+          if (fetchedData !== undefined || fetchedData !== null) {
+            const parsedData: any = parseContentData(fetchedData);
+            const parsedDataLength = parsedData ? parsedData.length : 0;
+            let cal = 0,
+              protein = 0,
+              fat = 0,
+              carbohydrate = 0;
+            if (parsedDataLength > 0) {
+              for (let index = 0; index < parsedDataLength; index++) {
+                cal += parsedData[index].cal;
+                protein += parsedData[index].protein;
+                fat += parsedData[index].fat;
+                carbohydrate += parsedData[index].fat;
+              }
+            }
+
+            const totalUserDailyConsumptions = {
+              totalCal: cal,
+              totalProtein: protein,
+              totalFat: fat,
+              totalCarbohydrate: carbohydrate,
+            };
+
+            setCurrentUserDailyConsumptionsTotals(totalUserDailyConsumptions);
+            setCurrentUserDailyConsumptions(parsedData);
+          }
+        });
+    } catch (error) {
+      console.log(error);
+    }
   }
   async function deleteDailyConsumption(food: any) {
     await database()
@@ -155,14 +154,34 @@ function HomePage() {
   ) : (
     <View style={styles.container}>
       <View style={styles.profileInnerContainer}>
-        <Icon name="account-question" size={30} color={Colors.iconColor} />
+        <TouchableWithoutFeedback
+          onPress={() => navigation.navigate('Profile')}>
+          <View style={styles.profilePhotoContainer}>
+            {currentUserData.profilePhotoURL ? (
+              <Image
+                source={{uri: profilePhotoURL}}
+                style={styles.profilePhotoContainer}
+              />
+            ) : (
+              <Icon
+                name="account-question"
+                size={30}
+                color={Colors.iconColor}
+              />
+            )}
+          </View>
+        </TouchableWithoutFeedback>
+
         <Text style={styles.welcomeText}>
           Welcome back {currentUserData.userName}!
         </Text>
-        <BodyMeasurements
-          height={currentUserData.height}
-          weight={currentUserData.weight}
-          bmi={bmi}></BodyMeasurements>
+        {currentUserData.height && currentUserData.weight ? (
+          <BodyMeasurements
+            height={currentUserData.height}
+            weight={currentUserData.weight}
+            bmi={bmi}
+          />
+        ) : null}
       </View>
       <View style={styles.innerContainer}>
         <View style={styles.titleContainer}>

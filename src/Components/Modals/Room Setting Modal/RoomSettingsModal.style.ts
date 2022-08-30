@@ -27,7 +27,7 @@ export default StyleSheet.create({
   placeHolderText: {
     color: Colors.textColor,
     fontFamily: Fonts.defaultRegularFont,
-    fontSize: 15,
+    fontSize: 14,
   },
   formContainer: {
     marginTop: 20,

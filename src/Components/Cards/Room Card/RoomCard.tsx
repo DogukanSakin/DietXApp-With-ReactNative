@@ -5,7 +5,7 @@ import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import Colors from '../../../Styles/Colors';
 interface ICardProps {
   room: any;
-  onPress: () => void;
+  onPress?: () => void;
 }
 const RoomCard: FC<ICardProps> = ({room, onPress}) => {
   return (
