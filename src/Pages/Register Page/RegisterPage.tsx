@@ -60,10 +60,8 @@ const RegisterPage: FC<IFormValues> = ({navigation}: any) => {
     age: '',
   };
   async function handleUploadProfilePhoto() {
-    let response: any = await getImage();
-    const responseURI = response.assets[0].uri;
-    const imageName = responseURI.substring(responseURI.lastIndexOf('/') + 1);
-    setPhotoURL(imageName);
+    const response = await getImage();
+    setPhotoURL(response);
   }
   async function handleRegister(formValues: any) {
     if (
@@ -93,7 +91,9 @@ const RegisterPage: FC<IFormValues> = ({navigation}: any) => {
             weight: formValues.weight ? formValues.weight : null,
             height: formValues.height ? formValues.height : null,
             age: formValues.age ? formValues.age : null,
-            profilePhotoURL: photoURL ? photoURL : null,
+            profilePhotoURL: photoURL
+              ? photoURL.substring(photoURL.lastIndexOf('/') + 1)
+              : null,
           };
           await auth().createUserWithEmailAndPassword(
             formValues.email,
@@ -101,13 +101,9 @@ const RegisterPage: FC<IFormValues> = ({navigation}: any) => {
           );
           const currUserUID = auth().currentUser?.uid;
           await database().ref(`users/${currUserUID}/`).set(newUser);
-          if (newUser.profilePhotoURL != null) {
-            const imageName = newUser.profilePhotoURL.substring(
-              newUser.profilePhotoURL.lastIndexOf('/') + 1,
-            );
-            const task = storage()
-              .ref(imageName)
-              .putFile(newUser.profilePhotoURL);
+          if (photoURL != null) {
+            const imageName = photoURL.substring(photoURL.lastIndexOf('/') + 1);
+            const task = storage().ref(imageName).putFile(photoURL);
             task.on('state_changed', taskSnapshot => {
               console.log(
                 `${taskSnapshot.bytesTransferred} transferred out of ${taskSnapshot.totalBytes}`,

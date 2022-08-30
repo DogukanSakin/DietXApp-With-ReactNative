@@ -29,7 +29,6 @@ export default async function getImage() {
       alert(response.customButton);
     } else {
       const result = response;
-
       return result;
     }
   });

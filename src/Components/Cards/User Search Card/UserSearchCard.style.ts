@@ -28,4 +28,9 @@ export default StyleSheet.create({
     fontFamily: Fonts.defaultRegularFont,
     marginTop: 5,
   },
+  profilePhotoImage: {
+    height: 30,
+    width: 30,
+    borderRadius: 50,
+  },
 });

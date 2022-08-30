@@ -253,6 +253,7 @@ const SearchUsers = ({navigation}: any) => {
             if (snapshot.val() !== null) {
               let data = snapshot.val();
               const parsedData = parseContentData(data);
+
               setUserData(parsedData);
             }
           });

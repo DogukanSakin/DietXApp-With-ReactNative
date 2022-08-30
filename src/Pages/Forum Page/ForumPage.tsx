@@ -99,8 +99,11 @@ const MyRooms = ({navigation}: any) => {
         .orderByChild('users')
         .on('value', function (snapshot) {
           snapshot.forEach(function (data): any {
-            if (data.val().users[0].id === currentUserInfo.userID) {
-              fetchedDataArray.push(data.val());
+            const roomUsersLength = data.val().users.length;
+            for (let i = 0; i < roomUsersLength; i++) {
+              if (data.val().users[i].id === currentUserInfo.userID) {
+                fetchedDataArray.push(data.val());
+              }
             }
           });
           setMyRoomsData(fetchedDataArray);

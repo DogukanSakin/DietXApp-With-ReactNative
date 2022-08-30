@@ -125,46 +125,67 @@ function MessagesPage({route, navigation}: any) {
     await database()
       .ref(`rooms/${room.id}/bannedUsers/`)
       .on('value', function (snapshot) {
-        snapshot.forEach(function (data): any {
-          if (data.val().id === userID) {
-            showMessage({
-              message: 'You have banned this user before!',
-              type: 'danger',
-              titleStyle: {fontFamily: Fonts.defaultRegularFont},
-            });
-          } else {
-            database()
-              .ref(`rooms/${room.id}/`)
-              .update({
-                bannedUsers: [
-                  ...room.bannedUsers,
-                  {id: userID, userName: userName},
-                ],
+        if (snapshot.val() !== null) {
+          snapshot.forEach(function (data): any {
+            if (data.val().id === userID) {
+              showMessage({
+                message: 'You have banned this user before!',
+                type: 'danger',
+                titleStyle: {fontFamily: Fonts.defaultRegularFont},
               });
-            showMessage({
-              message: 'The user has been banned.',
-              type: 'success',
-              titleStyle: {fontFamily: Fonts.defaultRegularFont},
-            });
-            database()
-              .ref(`rooms/${room.id}/messages/`)
-              .on('value', function (snapshot) {
-                snapshot.forEach(function (data): any {
-                  if (data.val().authorID === userID) {
-                    database()
-                      .ref(`rooms/${room.id}/messages/${data.key}`)
-                      .remove();
-                  }
+            } else {
+              database()
+                .ref(`rooms/${room.id}/`)
+                .update({
+                  bannedUsers: [
+                    ...room.bannedUsers,
+                    {id: userID, userName: userName},
+                  ],
                 });
+
+              showMessage({
+                message: 'The user has been banned.',
+                type: 'success',
+                titleStyle: {fontFamily: Fonts.defaultRegularFont},
               });
-            updateUsersInRoomData(room, userID);
-          }
-        });
+              database()
+                .ref(`rooms/${room.id}/messages/`)
+                .on('value', function (snapshot) {
+                  snapshot.forEach(function (data): any {
+                    if (data.val().authorID === userID) {
+                      database()
+                        .ref(`rooms/${room.id}/messages/${data.key}`)
+                        .remove();
+                    }
+                  });
+                });
+              updateUsersInRoomData(room, userID);
+            }
+          });
+        } else {
+          banUser(userID, userName);
+        }
       });
 
     setMessageContentModalInfoVisible(false);
   }
-
+  async function banUser(userID: any, userName: any) {
+    await database()
+      .ref(`rooms/${room.id}/`)
+      .update({
+        bannedUsers: [{id: userID, userName: userName}],
+      });
+    await database()
+      .ref(`rooms/${room.id}/messages/`)
+      .on('value', function (snapshot) {
+        snapshot.forEach(function (data): any {
+          if (data.val().authorID === userID) {
+            database().ref(`rooms/${room.id}/messages/${data.key}`).remove();
+          }
+        });
+      });
+    updateUsersInRoomData(room, userID);
+  }
   const renderMessages = ({item}: any) => (
     <MessageCard
       message={item}

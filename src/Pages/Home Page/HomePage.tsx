@@ -50,7 +50,7 @@ function HomePage({navigation}: any) {
         .on('value', snapshot => {
           const fetchedData = snapshot.val();
 
-          if (fetchedData != undefined || fetchedData != null) {
+          if (fetchedData !== undefined || fetchedData !== null) {
             setCurrentUserData(fetchedData);
             if (fetchedData.weight && fetchedData.height) {
               const BMI = Math.floor(
@@ -120,7 +120,7 @@ function HomePage({navigation}: any) {
                 cal += parsedData[index].cal;
                 protein += parsedData[index].protein;
                 fat += parsedData[index].fat;
-                carbohydrate += parsedData[index].fat;
+                carbohydrate += parsedData[index].carbohydrate;
               }
             }
 
@@ -209,7 +209,7 @@ function HomePage({navigation}: any) {
             <Text style={styles.totalCalTitle}>Total Daily Calories </Text>
             <CircularProgress
               value={
-                currentUserDailyConsumptionsTotals.totalCal != undefined
+                currentUserDailyConsumptionsTotals.totalCal !== undefined
                   ? currentUserDailyConsumptionsTotals.totalCal
                   : 0
               }
@@ -234,8 +234,9 @@ function HomePage({navigation}: any) {
           </View>
           <View style={styles.infoValuesContainer}>
             <View style={styles.infoValuesInnerContainer}>
-              {currentUserDailyConsumptionsTotals.totalCarbohydrate !=
-                undefined && currentUserDailyConsumptionsTotals != undefined ? (
+              {currentUserDailyConsumptionsTotals.totalCarbohydrate !==
+                undefined &&
+              currentUserDailyConsumptionsTotals !== undefined ? (
                 <Text style={styles.infoValuesText}>
                   {' '}
                   Carbohydrate:{' '}
@@ -246,8 +247,8 @@ function HomePage({navigation}: any) {
               )}
             </View>
             <View style={styles.infoValuesInnerContainer}>
-              {currentUserDailyConsumptionsTotals.totalProtein != undefined &&
-              currentUserDailyConsumptionsTotals != undefined ? (
+              {currentUserDailyConsumptionsTotals.totalProtein !== undefined &&
+              currentUserDailyConsumptionsTotals !== undefined ? (
                 <Text style={styles.infoValuesText}>
                   {' '}
                   Protein: {
@@ -259,8 +260,8 @@ function HomePage({navigation}: any) {
               )}
             </View>
             <View style={styles.infoValuesInnerContainer}>
-              {currentUserDailyConsumptionsTotals.totalFat != undefined &&
-              currentUserDailyConsumptionsTotals != undefined ? (
+              {currentUserDailyConsumptionsTotals.totalFat !== undefined &&
+              currentUserDailyConsumptionsTotals !== undefined ? (
                 <Text style={styles.infoValuesText}>
                   {' '}
                   Fat: {currentUserDailyConsumptionsTotals.totalFat}

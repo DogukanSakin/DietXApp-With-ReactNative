@@ -238,6 +238,7 @@ function BannedUsers({room}: any) {
         return bannedUser.id !== user.id;
       },
     );
+
     setBannedUsers(filteredRoomBannedList);
     await database()
       .ref(`rooms/${room.id}/bannedUsers/`)
@@ -267,7 +268,7 @@ function goUserInfoPage(navigation: any, user: any) {
   if (user.id === currentUserInfo.userID) {
     navigation.navigate('Profile' as never);
   } else {
-    navigation.navigate('UserInfo' as never, {user: user} as never);
+    navigation.navigate('UserInfo' as never, {userInfo: user} as never);
   }
 }
 

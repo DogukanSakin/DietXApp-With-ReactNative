@@ -9,7 +9,6 @@ export default StyleSheet.create({
   },
   profileInfoContainer: {
     alignItems: 'center',
-    flex: 1,
     marginTop: 30,
   },
   profilePhoto: {

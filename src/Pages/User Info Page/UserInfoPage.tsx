@@ -21,9 +21,12 @@ function UserInfoPage({route, navigation}: any) {
   const [bmi, setBMI] = useState<number>(0);
   const [userRoomData, setUserRoomData] = useState<any>({});
   useEffect(() => {
-    fetchUserData();
-    fetchMyRoomsData();
+    fetchAllData();
   }, []);
+  async function fetchAllData() {
+    await fetchUserData();
+    await fetchMyRoomsData();
+  }
   async function fetchMyRoomsData() {
     const fetchedDataArray: any = [];
     await database()
@@ -31,8 +34,12 @@ function UserInfoPage({route, navigation}: any) {
       .orderByChild('users')
       .on('value', function (snapshot) {
         snapshot.forEach(function (data): any {
-          if (data.val().users[0].id === userData.id) {
-            fetchedDataArray.push(data.val());
+          const roomUsersLength = data.val().users.length;
+          for (let i = 0; i < roomUsersLength; i++) {
+            if (data.val().users[i].id === userInfo.id) {
+              fetchedDataArray.push(data.val());
+              console.log(data.val());
+            }
           }
         });
         setUserRoomData(fetchedDataArray);
@@ -94,8 +101,8 @@ function UserInfoPage({route, navigation}: any) {
             bmi={bmi}
           />
         ) : null}
-        <FlatList data={userRoomData} renderItem={renderRooms} />
       </View>
+      <FlatList data={userRoomData} renderItem={renderRooms} numColumns={2} />
     </View>
   );
 }
